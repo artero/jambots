@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# require "bundler/setup"
+# require_relative "../lib/jambots"
+
+require "bundler/setup"
+require "jambots"
+
+bot = Jambots::Bot.new(
+  openai_apy_key: ENV["OPENAI_API_KEY"],
+  name: "Ron",
+  user_name: "Juan",
+  face: "🤖",
+  record_history: false,
+  prompt: "Tu eres un chatbot que quiere ayudarme con dudas sobre programación en general y de Ruby en particular. Darás respuestas cortas y concisas de una frase."
+)
+
+a = bot.message("¿De que color es el cielo?")
+
+puts a
