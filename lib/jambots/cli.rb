@@ -16,6 +16,7 @@ module Jambots
       spinner.success
 
       render(message)
+      puts bot.history_file_path
     rescue OpenAIMessageError => e
       puts e
     end
@@ -30,10 +31,11 @@ module Jambots
     end
 
     option :boot, type: :string, aliases: "-b", banner: "<boot>"
+    option :messages, type: :numeric, aliases: "-l", banner: "<line>"
     desc "clean", "clean hello"
     def clean
       load_robot(options)
-      bot.clean_history
+      bot.clean_history(options[:messages])
     end
 
     private
@@ -46,7 +48,7 @@ module Jambots
         user_name: "Juan",
         face: "🤖",
         record_history: true,
-        model: "gpt-4",
+        model: "gpt-3.5-turbo",
         prompt: "Me ayudarás con programación en general y de Ruby en particular. Darás respuestas cortas y concisas de una frase.",
         log: false
       )

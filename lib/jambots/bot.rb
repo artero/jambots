@@ -72,8 +72,16 @@ module Jambots
       build_messages
     end
 
-    def clean_history
-      File.delete(history_file_path) if File.exist?(history_file_path)
+    def clean_history(n)
+      return unless File.exist?(history_file_path)
+
+      if n.nil?
+        File.delete(history_file_path)
+        return
+      end
+
+      messages.slice!(1..n - 1)
+      update_history
     end
 
     private
@@ -91,7 +99,7 @@ module Jambots
       [
         {
           role: "system",
-          content: "Your name is #{name}, today is #{Date.today}. "
+          content: ["Your name is #{name}, today is #{Date.today}", prompt].join(". ")
         }
       ]
     end
