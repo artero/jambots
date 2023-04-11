@@ -6,7 +6,8 @@ module Jambots
   class OpenAIMessageError < StandardError; end
 
   class Bot
-    DEFAULT_MODEL = "gpt-3.5-turbo"
+    # DEFAULT_MODEL = "gpt-3.5-turbo"
+    DEFAULT_MODEL = "gpt-4"
     DEFAULT_NAME = "JamBot"
     DEFAULT_PATH = "#{ENV["HOME"]}/.jambots"
 

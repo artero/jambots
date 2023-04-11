@@ -6,7 +6,7 @@ module Jambots
   class Cli < Thor
     attr_reader :bot
 
-    option :boot, type: :string, aliases: "-b", banner: "<boot>"
+    option :bot, type: :string, aliases: "-b", banner: "<bot file>"
     desc "bot NAME", "Greets NAME"
     def chat(query)
       load_robot(options)
@@ -21,7 +21,6 @@ module Jambots
       puts e
     end
 
-    option :boot, type: :string, aliases: "-b", banner: "<boot>"
     desc "history", "history hello"
     def history
       load_robot(options)
@@ -40,18 +39,21 @@ module Jambots
 
     private
 
-    # Move to Jambots::Bot
     def load_robot(options)
-      @bot = Jambots::Bot.new(
+      default_options = {
         openai_apy_key: ENV["OPENAI_API_KEY"],
         name: "Ron",
         user_name: "Juan",
         face: "🤖",
         record_history: true,
         model: "gpt-3.5-turbo",
-        prompt: "Me ayudarás con programación en general y de Ruby en particular. Darás respuestas cortas y concisas de una frase.",
+        prompt: "",
         log: false
-      )
+      }
+      bot_options = options[:bot] && File.exist?(options[:bot]) ? YAML.safe_load(File.read(options[:bot]), symbolize_names: true) : {}
+      config = default_options.merge(bot_options)
+
+      @bot = Jambots::Bot.new(config)
     end
 
     def render(message, options = {})
