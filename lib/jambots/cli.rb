@@ -16,7 +16,7 @@ module Jambots
       spinner.success
 
       render(message)
-      puts bot.history_file_path
+      puts bot.history_file
     rescue OpenAIMessageError => e
       puts e
     end
@@ -80,7 +80,7 @@ module Jambots
 
     def spinner
       @spinner ||= TTY::Spinner.new(
-        "( #{bot.face} )  [#{pastel.green(":spinner")}] ",
+        "(🤖)  [#{pastel.green(":spinner")}] ",
         format: :pulse_2,
         clear: true
       )

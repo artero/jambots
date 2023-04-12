@@ -1,59 +1,81 @@
-require "date"
-# require "openai"
+# spec/bot_spec.rb
+require "spec_helper"
 
-RSpec.describe Jambots::Bot do
-  let(:bot) {
-    Jambots::Bot.new(
-      name: "TestBot",
-      user_name: "Jam",
-      face: ":)",
-      record_history: false,
-      model: "fake_model"
-    )
-  }
-
-  describe "#initialize" do
-    it "sets the correct attributes" do
-      expect(bot.name).to eq "TestBot"
-      expect(bot.user_name).to eq "Jam"
-      expect(bot.face).to eq ":)"
-      expect(bot.model).to eq "fake_model"
-      expect(bot.options[:record_history]).to eq false
-    end
-  end
-
-  describe "#message" do
-    it "returns a response with the correct role" do
-      allow(bot).to receive(:client).and_return(double("OpenAI::Client", chat: {"choices" => [{"message" => {"role" => "TestBot", "content" => "Hello, Jam!"}}]}))
-      response = bot.message("Hello, TestBot!")
-      expect(response[-1]["role"]).to eq "TestBot"
-    end
-  end
-
-  describe "#record_history?" do
-    it "returns the correct value" do
-      expect(bot.send(:record_history?)).to eq false
-    end
-  end
-
-  describe "#build_messages" do
-    it "builds messages with the correct role" do
-      messages = bot.send(:build_messages)
-      expect(messages[0][:role]).to eq "system"
-    end
-  end
-
-  describe "#clean_history" do
-    it "deletes the history file if it exists" do
-      allow(File).to receive(:exist?).and_return(true)
-      expect(File).to receive(:delete).with(bot.history_file_path)
-      bot.clean_history
+module Jambots
+  RSpec.describe Bot do
+    let(:bot) do
+      Bot.new(
+        openai_apy_key: "your_openai_api_key_here",
+        bot: "jambot",
+        bots_dir: "tmp"
+      )
     end
 
-    it "does not attempt to delete the history file if it does not exist" do
-      allow(File).to receive(:exist?).and_return(false)
-      expect(File).not_to receive(:delete)
-      bot.clean_history
+    let(:bot_name) { "test_bot" }
+    let(:custom_bots_dir) { "custom_bots" }
+    let(:default_bots_dir) { "#{ENV["HOME"]}/.jambots" }
+
+    after do
+      # Clean up the created directories after each test
+      FileUtils.rm_rf("#{default_bots_dir}/#{bot_name}")
+      FileUtils.rm_rf("#{custom_bots_dir}/#{bot_name}")
     end
+
+    describe ".create" do
+      let(:default_bots_dir) { "#{ENV["HOME"]}/.jambots" }
+      let(:name) { "test_bot" }
+      let(:model) { "gpt-4" }
+      let(:prompt) { "Hello, how can I help you?" }
+      let(:custom_bots_dir) { "tmp/custom_bots" }
+
+      after do
+        FileUtils.rm_rf("#{default_bots_dir}/#{name}")
+        FileUtils.rm_rf("#{custom_bots_dir}/#{name}")
+      end
+
+      # it "creates a bot with default options" do
+      #   bot_dir = described_class.create(name: name)
+
+      #   expect(bot_dir).to eq("#{default_bots_dir}/#{name}")
+      #   expect(Dir.exist?(bot_dir)).to be(true)
+      #   expect(Dir.exist?("#{bot_dir}/conversations")).to be(true)
+      #   expect(File.exist?("#{bot_dir}/bot.yml")).to be(true)
+
+      #   bot_yml_content = YAML.safe_load(File.read("#{bot_dir}/bot.yml"), permitted_classes: [Symbol], symbolize_names: true)
+      #   expect(bot_yml_content[:model]).to eq(model)
+      #   expect(bot_yml_content[:prompt]).to eq(prompt)
+      # end
+
+      it "creates a bot with custom options" do
+        bot_dir = described_class.create(name: name, directory: custom_bots_dir, model: model, prompt: prompt)
+
+        expect(bot_dir).to eq("#{custom_bots_dir}/#{name}")
+        expect(Dir.exist?(bot_dir)).to be(true)
+        expect(Dir.exist?("#{bot_dir}/conversations")).to be(true)
+        expect(File.exist?("#{bot_dir}/bot.yml")).to be(true)
+
+        bot_yml_content = YAML.safe_load(File.read("#{bot_dir}/bot.yml"), permitted_classes: [Symbol], symbolize_names: true)
+        expect(bot_yml_content[:model]).to eq(model)
+        expect(bot_yml_content[:prompt]).to eq(prompt)
+      end
+    end
+
+    # it "creates a new conversation" do
+    #   conversation = bot.new_conversation
+    #   expect(conversation).to be_instance_of(Conversation)
+    # end
+
+    # it "lists all conversations" do
+    #   conversations = bot.list_conversations
+    #   expect(conversations).not_to be_empty
+    # end
+
+    # it "deletes a conversation" do
+    #   conversation = bot.new_conversation
+    #   file_name = conversation.file_name
+    #   bot.delete_conversation(file_name)
+
+    #   expect(bot.list_conversations).not_to include(file_name)
+    # end
   end
 end

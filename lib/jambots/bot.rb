@@ -1,118 +1,99 @@
 require "date"
 require "openai"
 require "fileutils"
+require "yaml"
 
 module Jambots
   class OpenAIMessageError < StandardError; end
 
   class Bot
-    # DEFAULT_MODEL = "gpt-3.5-turbo"
     DEFAULT_MODEL = "gpt-4"
-    DEFAULT_NAME = "JamBot"
-    DEFAULT_PATH = "#{ENV["HOME"]}/.jambots"
+    DEFAULT_BOTS_DIR = "#{ENV["HOME"]}/.jambots"
 
-    attr_reader :model,
-      :face,
-      :history_file_path,
-      :history_file,
-      :name,
-      :user_name,
-      :options,
-      :prompt,
-      :messages
+    attr_reader :name, :model, :options, :prompt, :client, :conversations_dir, :bot_dir
 
-    def initialize(args = {})
-      actual_date = Time.now.strftime("%Y%m%d")
-      @user_name = args[:user_name]
-      @name = args[:name] || DEFAULT_NAME
-      @face = args[:face]
-      @model = args[:model] || DEFAULT_MODEL
-      @prompt = args[:prompt]
-      @options = {
-        record_history: !(args[:record_history] == false),
-        jambots_dir: args[:jambots_dir] || DEFAULT_PATH,
-        openai_apy_key: args[:openai_apy_key],
-        log: args[:log]
-      }
+    def self.create(
+      name:,
+      directory: DEFAULT_BOTS_DIR,
+      model: DEFAULT_MODEL,
+      prompt: nil
+    )
+      bot_dir = "#{directory}/#{name}"
+      FileUtils.mkdir_p(bot_dir) unless Dir.exist?(bot_dir)
 
-      # initialize
-      unless Dir.exist?("#{options[:jambots_dir]}/history")
-        FileUtils.mkdir_p("#{options[:jambots_dir]}/history")
-      end
-      # TODO Create a bot.yml file with default options
+      conversations_dir = "#{bot_dir}/conversations"
+      FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
 
-      @history_file = "#{args[:name]}_history_#{actual_date}.yml"
-      @history_file_path = "#{options[:jambots_dir]}/history/#{history_file}"
+      bot_yml_path = "#{bot_dir}/bot.yml"
+      File.write(bot_yml_path, {model: model, prompt: prompt}.to_yaml) unless File.exist?(bot_yml_path)
 
-      @messages = build_messages(args)
+      bot_dir
     end
 
-    def message(text)
+    def initialize(args = {})
+      @name = args[:name]
+      @model = args[:model] || DEFAULT_MODEL
+      @prompt = args[:prompt]
+
+      @client = OpenAI::Client.new(access_token: args[:openai_apy_key])
+
+      @bot_dir = args[:bot_dir]
+
+      @conversations_dir = "#{@bot_dir}/conversations"
+      FileUtils.mkdir_p(@conversations_dir) unless Dir.exist?(@conversations_dir)
+
+      # Load options from bot.yml file if it exists
+      bot_yml_path = "#{@bot_dir}/bot.yml"
+      if File.exist?(bot_yml_path)
+        bot_yml_options = YAML.safe_load(File.read(bot_yml_path), permitted_classes: [Symbol], symbolize_names: true)
+        args = bot_yml_options.merge(args)
+      end
+
+      # Set the model and prompt with the highest priority options
+      @model = args[:model] || DEFAULT_MODEL
+      @prompt = args[:prompt]
+    end
+
+    def message(conversation, text)
       response = client.chat(
         parameters: {
-          model: model, # Required.
-          messages: messages.insert(-1, {role: "user", content: text}),
+          model: model,
+          messages: conversation.messages.insert(-1, {role: "user", content: text}),
           temperature: 0.7
         }
       )
 
-      puts response if options[:log]
-
       message = response.dig("choices", 0, "message")
 
-      if message.nil?
-        raise OpenAIMessageError, response
-      end
-      messages.insert(-1, message.transform_keys(&:to_sym)).compact
-      update_history if record_history?
+      raise OpenAIMessageError, response if message.nil?
+
+      conversation.add_message("assistant", message[:content])
+      conversation.save
 
       message.transform_keys(&:to_sym)
     end
 
-    def history
-      build_messages
+    def new_conversation
+      file_name = generate_conversation_file_name
+      file_path = File.join(@conversations_dir, file_name)
+      Conversation.new(file_path)
     end
 
-    def clean_history(n)
-      return unless File.exist?(history_file_path)
+    def list_conversations
+      Dir.glob("#{@conversations_dir}/*").map { |file| File.basename(file) }
+    end
 
-      if n.nil?
-        File.delete(history_file_path)
-        return
-      end
-
-      messages.slice!(1..n - 1)
-      update_history
+    def delete_conversation(file_name)
+      file_path = File.join(@conversations_dir, file_name)
+      conversation = Conversation.new(file_path)
+      conversation.delete
     end
 
     private
 
-    def record_history?
-      options[:record_history]
-    end
-
-    def build_messages(args = {})
-      if record_history? && File.exist?(history_file_path)
-        messages_raw = YAML.safe_load(File.read(history_file_path), [Symbol])
-        return messages_raw.map { |m| m.transform_keys(&:to_sym) }
-      end
-
-      [
-        {
-          role: "system",
-          content: ["Your name is #{name}, today is #{Date.today}", prompt].join(". ")
-        }
-      ]
-    end
-
-    def update_history
-      # json_str = JSON.generate(messages)
-      # File.write(history_file_path, json_str)
-      File.write(history_file_path, messages.to_yaml)
-    end
-
-    def client
-      @client ||= OpenAI::Client.new(access_token: options[:openai_apy_key])
+    def generate_conversation_file_name
+      total_files = Dir.glob("#{@conversations_dir}/*").count
+      "#{total_files + 1}.yml"
     end
   end
 end
