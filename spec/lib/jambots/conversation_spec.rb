@@ -1,4 +1,5 @@
-# spec/conversation_spec.rb
+# frozen_string_literal: true
+
 require "spec_helper"
 
 module Jambots

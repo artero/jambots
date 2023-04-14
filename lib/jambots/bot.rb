@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "date"
 require "openai"
 require "fileutils"
@@ -10,37 +12,37 @@ module Jambots
     DEFAULT_MODEL = "gpt-4"
     DEFAULT_BOTS_DIR = "#{ENV["HOME"]}/.jambots"
 
-    attr_reader :name, :model, :options, :prompt, :client, :conversations_dir, :bot_dir
+    attr_reader :name, :model, :options, :prompt, :client, :bot_dir, :current_conversation
 
     def self.create(
-      name:,
+      name,
       directory: DEFAULT_BOTS_DIR,
       model: DEFAULT_MODEL,
       prompt: nil
     )
       bot_dir = "#{directory}/#{name}"
       FileUtils.mkdir_p(bot_dir) unless Dir.exist?(bot_dir)
-
       conversations_dir = "#{bot_dir}/conversations"
       FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
 
       bot_yml_path = "#{bot_dir}/bot.yml"
-      File.write(bot_yml_path, {model: model, prompt: prompt}.to_yaml) unless File.exist?(bot_yml_path)
 
-      bot_dir
+      raise "The bot file #{bot_yml_path} already exists" if File.exist?(bot_yml_path)
+
+      bot_options = {
+        model: model,
+        prompt: prompt
+      }
+      mi_hash = bot_options.transform_keys(&:to_s)
+      File.write(bot_yml_path, mi_hash.to_yaml)
+
+      new(name, bot_dir: bot_dir)
     end
 
-    def initialize(args = {})
-      @name = args[:name]
-      @model = args[:model] || DEFAULT_MODEL
-      @prompt = args[:prompt]
+    def initialize(name, args = {})
+      @bot_dir = args[:bot_dir] || "#{DEFAULT_BOTS_DIR}/#{name}"
 
-      @client = OpenAI::Client.new(access_token: args[:openai_apy_key])
-
-      @bot_dir = args[:bot_dir]
-
-      @conversations_dir = "#{@bot_dir}/conversations"
-      FileUtils.mkdir_p(@conversations_dir) unless Dir.exist?(@conversations_dir)
+      raise "Bot #{name} doesn't exist." unless File.exist?("#{bot_dir}/bot.yml")
 
       # Load options from bot.yml file if it exists
       bot_yml_path = "#{@bot_dir}/bot.yml"
@@ -49,16 +51,23 @@ module Jambots
         args = bot_yml_options.merge(args)
       end
 
+      openai_api_key = args[:openai_api_key] || ENV["OPENAI_API_KEY"]
+      @client = OpenAI::Client.new(access_token: openai_api_key)
+
+      @current_conversation = build_conversation(args)
+      FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
+
       # Set the model and prompt with the highest priority options
+      @name = name
       @model = args[:model] || DEFAULT_MODEL
       @prompt = args[:prompt]
     end
 
-    def message(conversation, text)
+    def message(text)
       response = client.chat(
         parameters: {
           model: model,
-          messages: conversation.messages.insert(-1, {role: "user", content: text}),
+          messages: current_conversation.messages.insert(-1, {role: "user", content: text}),
           temperature: 0.7
         }
       )
@@ -67,29 +76,32 @@ module Jambots
 
       raise OpenAIMessageError, response if message.nil?
 
-      conversation.add_message("assistant", message[:content])
-      conversation.save
+      current_conversation.add_message("assistant", message[:content])
+      current_conversation.save
 
       message.transform_keys(&:to_sym)
     end
 
-    def new_conversation
-      file_name = generate_conversation_file_name
-      file_path = File.join(@conversations_dir, file_name)
-      Conversation.new(file_path)
+    def conversations
+      Dir.glob("#{conversations_dir}/*").map do |file|
+        Conversation.new(file)
+      end
     end
 
-    def list_conversations
-      Dir.glob("#{@conversations_dir}/*").map { |file| File.basename(file) }
-    end
-
-    def delete_conversation(file_name)
-      file_path = File.join(@conversations_dir, file_name)
-      conversation = Conversation.new(file_path)
-      conversation.delete
+    def build_conversation(args)
+      if args[:conversation]
+        Conversation.new(args[:conversation])
+      else
+        new_conversation_path = "#{conversations_dir}/#{Time.now.strftime("%Y%m%d%H%M%S")}.yml"
+        Conversation.new(new_conversation_path)
+      end
     end
 
     private
+
+    def conversations_dir
+      "#{bot_dir}/conversations"
+    end
 
     def generate_conversation_file_name
       total_files = Dir.glob("#{@conversations_dir}/*").count

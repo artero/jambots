@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Jambots
   class Conversation
     attr_accessor :messages, :file_name, :file_path
@@ -18,6 +20,7 @@ module Jambots
 
     def load_messages
       return [] unless File.exist?(@file_path)
+
       file_content = File.read(@file_path)
 
       YAML.safe_load(file_content, permitted_classes: [Symbol], symbolize_names: true)
