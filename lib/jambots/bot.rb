@@ -26,13 +26,13 @@ module Jambots
       FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
 
       bot_yml_path = "#{bot_dir}/bot.yml"
-
       raise "The bot file #{bot_yml_path} already exists" if File.exist?(bot_yml_path)
 
       bot_options = {
         model: model,
         prompt: prompt
       }
+
       mi_hash = bot_options.transform_keys(&:to_s)
       File.write(bot_yml_path, mi_hash.to_yaml)
 
@@ -54,20 +54,20 @@ module Jambots
       openai_api_key = args[:openai_api_key] || ENV["OPENAI_API_KEY"]
       @client = OpenAI::Client.new(access_token: openai_api_key)
 
-      @current_conversation = build_conversation(args)
-      FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
-
-      # Set the model and prompt with the highest priority options
       @name = name
       @model = args[:model] || DEFAULT_MODEL
       @prompt = args[:prompt]
+
+      FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
     end
 
-    def message(text)
+    def message(text, conversation = nil)
+      conversation ||= build_conversation
+
       response = client.chat(
         parameters: {
           model: model,
-          messages: current_conversation.messages.insert(-1, {role: "user", content: text}),
+          messages: conversation.messages.insert(-1, {role: "user", content: text}),
           temperature: 0.7
         }
       )
@@ -76,8 +76,8 @@ module Jambots
 
       raise OpenAIMessageError, response if message.nil?
 
-      current_conversation.add_message("assistant", message[:content])
-      current_conversation.save
+      conversation.add_message("assistant", message["content"])
+      conversation.save
 
       message.transform_keys(&:to_sym)
     end
@@ -88,13 +88,11 @@ module Jambots
       end
     end
 
-    def build_conversation(args)
-      if args[:conversation]
-        Conversation.new(args[:conversation])
-      else
-        new_conversation_path = "#{conversations_dir}/#{Time.now.strftime("%Y%m%d%H%M%S")}.yml"
-        Conversation.new(new_conversation_path)
-      end
+    def build_conversation
+      new_conversation_path = "#{conversations_dir}/#{Time.now.strftime("%Y%m%d%H%M%S")}.yml"
+      conversation = Conversation.new(new_conversation_path)
+      conversation.add_message("system", prompt)
+      conversation
     end
 
     private
