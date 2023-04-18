@@ -9,7 +9,7 @@ module Jambots
     option :conversation,  desc: "Nombre del fichero de la conversación"
     option :path, desc: "Ruta donde se encuentra el bot y el directorio de conversaciones"
     option :continue, type: :boolean, aliases: "-c", desc: "Continuar con la última conversación creada"
-    def chat(message)
+    def chat(query)
       bot = Bot.new(
         options[:bot] || DEFAULT_BOT,
         path: options[:path] || Jambots::Bot::DEFAULT_BOTS_DIR
@@ -19,12 +19,14 @@ module Jambots
 
       conversation = continue ? bot.conversations.last : options[:conversation]
 
-      response = bot.message(
-        message,
+      renderer.spinner.auto_spin
+      message = bot.message(
+        query,
         conversation
       )
+      renderer.spinner.success
 
-      puts "#{bot.name}: #{response[:content]}"
+      renderer.render(message)
     end
 
     desc "new NAME", "Crea un nuevo bot con el nombre especificado"
@@ -38,6 +40,12 @@ module Jambots
 
       Jambots::Bot.create(name, directory: directory, model: model, prompt: prompt)
       puts "Bot '#{name}' creado en el directorio '#{directory}'."
+    end
+
+    private
+
+    def renderer
+      @renderer ||= Renderer.new
     end
   end
 end

@@ -78,8 +78,7 @@ module Jambots
 
       conversation.add_message("assistant", message["content"])
       conversation.save
-
-      message.transform_keys(&:to_sym)
+      conversation.messages.last
     end
 
     def conversations
@@ -91,7 +90,7 @@ module Jambots
     def build_conversation
       new_conversation_path = "#{conversations_dir}/#{Time.now.strftime("%Y%m%d%H%M%S")}.yml"
       conversation = Conversation.new(new_conversation_path)
-      conversation.add_message("system", prompt)
+      conversation.add_message("system", prompt.to_s)
       conversation
     end
 
