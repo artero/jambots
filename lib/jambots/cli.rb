@@ -6,7 +6,7 @@ module Jambots
 
     desc "chat MESSAGE", "Inicia un chat con el bot y envía un mensaje"
     option :bot, aliases: "-b", desc: "Nombre del bot"
-    option :conversation,  desc: "Nombre del fichero de la conversación"
+    option :conversation, desc: "Nombre del fichero de la conversación"
     option :path, desc: "Ruta donde se encuentra el bot y el directorio de conversaciones"
     option :continue, type: :boolean, aliases: "-c", desc: "Continuar con la última conversación creada"
     def chat(query)
@@ -16,17 +16,13 @@ module Jambots
       )
 
       continue = options[:continue]
-
-      conversation = continue ? bot.conversations.last : options[:conversation]
+      previous_conversation = continue ? bot.conversations.last : bot.load_conversation(options[:conversation])
+      conversation = previous_conversation || bot.new_conversation
 
       renderer.spinner.auto_spin
-      message = bot.message(
-        query,
-        conversation
-      )
+      message = bot.message(query, conversation)
       renderer.spinner.success
-
-      renderer.render(message)
+      renderer.render(message, conversation)
     end
 
     desc "new NAME", "Crea un nuevo bot con el nombre especificado"

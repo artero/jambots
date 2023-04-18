@@ -18,9 +18,12 @@ module Jambots
       @pastel ||= Pastel.new
     end
 
-    def render(message)
+    def render(message, conversation)
       print_line(role_header(message[:role]))
       puts pastel.magenta(message[:content])
+      file_name = conversation.file_name
+      conversation_name = File.basename(file_name, File.extname(file_name))
+      print_line("#{conversation_name}   ")
     end
 
     private

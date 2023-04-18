@@ -61,9 +61,7 @@ module Jambots
       FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
     end
 
-    def message(text, conversation = nil)
-      conversation ||= build_conversation
-
+    def message(text, conversation)
       response = client.chat(
         parameters: {
           model: model,
@@ -87,11 +85,22 @@ module Jambots
       end
     end
 
-    def build_conversation
+    def new_conversation
       new_conversation_path = "#{conversations_dir}/#{Time.now.strftime("%Y%m%d%H%M%S")}.yml"
       conversation = Conversation.new(new_conversation_path)
       conversation.add_message("system", prompt.to_s)
       conversation
+    end
+
+    def load_conversation(conversation_name)
+      return nil unless conversation_name
+
+      conversation_path = Dir.glob("#{conversations_dir}/#{conversation_name}*").first
+
+      return nil unless conversation_path
+      return nil unless File.exist?(conversation_path)
+
+      Conversation.new(conversation_path)
     end
 
     private
