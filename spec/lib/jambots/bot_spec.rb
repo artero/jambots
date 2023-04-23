@@ -2,132 +2,124 @@
 
 require "spec_helper"
 
-module Jambots
-  RSpec.describe Bot do
-    let(:bot) do
-      FileUtils.rm_rf("#{default_bots_dir}/#{bot_name}")
+RSpec.describe Jambots::Bot do
+  let(:bot_name) { "test_bot" }
+  let(:bot_directory) { "./spec/fixtures/bots" }
+  let(:bot) { described_class.new(bot_name, bot_dir: "#{bot_directory}/#{bot_name}") }
 
-      Bot.create(
-        bot_name,
-        directory: custom_bots_dir
-      )
-    end
 
-    let(:bot_name) { "test_bot" }
-    let(:custom_bots_dir) { "custom_bots" }
-    let(:default_bots_dir) { "#{ENV["HOME"]}/.jambots" }
-
+  describe ".create" do
     before do
-      FileUtils.rm_rf("#{default_bots_dir}/#{bot_name}")
-      FileUtils.rm_rf("#{custom_bots_dir}/#{bot_name}")
+      FileUtils.rm_rf(new_bot_directory)
+      FileUtils.mkdir_p(new_bot_directory)
     end
 
     after do
-      # Clean up the created directories after each test
-      FileUtils.rm_rf("#{default_bots_dir}/#{bot_name}")
-      FileUtils.rm_rf("#{custom_bots_dir}/#{bot_name}")
+      FileUtils.rm_rf(new_bot_directory)
     end
 
-    describe ".create" do
-      let(:default_bots_dir) { "#{ENV["HOME"]}/.jambots" }
-      let(:name) { "test_bot" }
-      let(:model) { "gpt-4" }
-      let(:prompt) { "Hello, how can I help you?" }
-      let(:custom_bots_dir) { "tmp/custom_bots" }
+    let(:new_bot_name) { "new_bot" }
+    let(:new_bot_directory) { "./tmp/bots" }
+    let(:bot_directory) { "#{new_bot_directory}/#{new_bot_name}" }
 
-      after do
-        FileUtils.rm_rf("#{default_bots_dir}/#{name}")
-        FileUtils.rm_rf("#{custom_bots_dir}/#{name}")
-      end
-
-      it "creates a bot with custom options" do
-        bot = described_class.create(name, directory: custom_bots_dir, model: model, prompt: prompt)
-
-        bot_dir = bot.bot_dir
-        expect(bot_dir).to eq("#{custom_bots_dir}/#{name}")
-        expect(Dir.exist?(bot_dir)).to be(true)
-
-        expect(Dir.exist?("#{bot_dir}/conversations")).to be(true)
-        expect(File.exist?("#{bot_dir}/bot.yml")).to be(true)
-
-        bot_yml_content = YAML.safe_load(File.read("#{bot_dir}/bot.yml"), permitted_classes: [Symbol], symbolize_names: true)
-        expect(bot_yml_content[:model]).to eq(model)
-        expect(bot_yml_content[:prompt]).to eq(prompt)
-      end
+    it "creates a new bot" do
+      expect do
+        described_class.create(new_bot_name, directory: new_bot_directory)
+      end.to change { Dir.exist?(bot_directory) }.from(false).to(true)
     end
 
-    describe "#initialize" do
-      context "when the bot doesn't exist" do
-        it "raises an error" do
-          expect {
-            Bot.new(
-              "non_existent_bot",
-              openai_api_key: "your_openai_api_key_here"
-            )
-          }.to raise_error(RuntimeError, "Bot non_existent_bot doesn't exist.")
-        end
-      end
-
-      context "when the bot exists" do
-        let(:existing_bot_name) { "existing_bot" }
-        let(:existing_bot_dir) { "#{default_bots_dir}/#{existing_bot_name}" }
-
-        before do
-          # Create a bot using the .create method
-          Bot.create(existing_bot_name)
-        end
-
-        after do
-          # Clean up the created directories after the test
-          FileUtils.rm_rf(existing_bot_dir)
-        end
-
-        it "loads the bot without raising an error" do
-          expect {
-            Bot.new(
-              existing_bot_name,
-              openai_api_key: "your_openai_api_key_here"
-            )
-          }.not_to raise_error
-        end
-      end
+    it "creates the bot.yml configuration file" do
+      described_class.create(new_bot_name, directory: new_bot_directory)
+      expect(File.exist?("#{bot_directory}/bot.yml")).to eq true
     end
 
-    describe "#message" do
-      let(:client) { double(:client) }
-      let(:text) { "Hello, how are you?" }
-      let(:response) do
-        {
-          "choices" => [
-            {
-              "message" => {
-                "role" => "assistant",
-                "content" => "I'm doing well, thank you! How can I help you today?"
-              }
+    it "creates the conversations directory" do
+      described_class.create(new_bot_name, directory: new_bot_directory)
+      expect(Dir.exist?("#{bot_directory}/conversations")).to eq true
+    end
+  end
+
+  describe "#initialize" do
+    it "initializes a bot with the correct name" do
+      expect(bot.name).to eq(bot_name)
+    end
+
+    it "loads options from the bot.yml configuration file" do
+      expect(bot.model).to eq(Jambots::Bot::DEFAULT_MODEL)
+      expect(bot.prompt).to eq("Hello! I am your test bot.")
+    end
+  end
+
+  describe "#message" do
+    let(:conversation_path) { "./tmp/conversation.yml" }
+    let(:conversation) do
+      conversation = Jambots::Conversation.new(conversation_path)
+      conversation.add_message("system", "Hello")
+      conversation
+    end
+    let(:user_message) { "Hello, bot!" }
+
+
+    before do
+      File.delete(conversation_path) if File.exist?(conversation_path)
+
+      allow(bot.client).to receive(:chat).and_return(
+        "choices" => [
+          {
+            "role" => "assistant",
+            "message" => {
+              "content" => "Hello, user!"
             }
-          ]
-        }
-      end
+          }
+        ]
+      )
+    end
 
-      before do
-        allow(OpenAI::Client).to receive(:new).and_return(client)
-        allow(client).to receive(:chat).and_return(response)
-      end
+    after do
+      File.delete(conversation_path) if File.exist?(conversation_path)
+    end
 
-      it "sends a message and receives a response" do
-        message = bot.message(text)
+    it "sends a message to the bot and receives a response" do
+      response_message = bot.message(user_message, conversation)
+      expect(response_message[:role]).to eq("assistant")
+      expect(response_message[:content]).to eq("Hello, user!")
+    end
 
-        expect(client).to have_received(:chat)
-        expect(message[:role]).to eq("assistant")
-        expect(message[:content]).to eq("I'm doing well, thank you! How can I help you today?")
+    it "adds the message to the conversation" do
+      expect {
+        bot.message(user_message, conversation)
+      }.to change { conversation.messages.count }.by(2)
+    end
+  end
+
+  describe "#conversations" do
+    it "returns an array of Conversation instances" do
+      conversations = bot.conversations
+      expect(conversations).to all(be_a(Jambots::Conversation))
+    end
+  end
+
+  describe "#new_conversation" do
+    it "creates a new Conversation instance" do
+      new_conversation = bot.new_conversation
+      expect(new_conversation).to be_a(Jambots::Conversation)
+    end
+  end
+
+  describe "#load_conversation" do
+    let(:conversation_name) { "1" }
+
+    context "when the conversation exists" do
+      it "loads the conversation" do
+        conversation = bot.load_conversation(conversation_name)
+        expect(conversation).to be_a(Jambots::Conversation)
       end
     end
 
-    describe "#conversations" do
-      it "returns a list of conversations" do
-        conversations = bot.conversations
-
-        expect(conversations).to all(be_a(Conversation))
+    context "when the conversation does not exist" do
+      it "returns nil" do
+        conversation = bot.load_conversation("nonexistent_conversation")
+        expect(conversation).to be_nil
       end
     end
   end
