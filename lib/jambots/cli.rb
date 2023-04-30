@@ -10,19 +10,8 @@ module Jambots
     option :path, desc: "Path where the bot and the conversation directory are located"
     option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
     def chat(query)
-      bot = Bot.new(
-        options[:bot] || DEFAULT_BOT,
-        path: options[:path] || Jambots::Bot::DEFAULT_BOTS_DIR
-      )
-
-      last = options[:last]
-      previous_conversation = last ? bot.conversations.last : bot.load_conversation(options[:conversation])
-      conversation = previous_conversation || bot.new_conversation
-
-      renderer.spinner.auto_spin
-      message = bot.message(query, conversation)
-      renderer.spinner.success
-      renderer.render(message, conversation)
+      chat_controller = Controllers::ChatController.new(options)
+      chat_controller.chat(query)
     end
 
     desc "new NAME", "Create a new bot with the specified name"
