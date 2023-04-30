@@ -1,4 +1,3 @@
-# spec/jambots/conversation_spec.rb
 require "spec_helper"
 
 RSpec.describe Jambots::Controllers::ChatController do

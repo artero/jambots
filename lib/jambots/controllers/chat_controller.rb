@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Jambots::Controllers
   class ChatController
     DEFAULT_BOT = "jambot"
