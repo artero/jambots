@@ -11,7 +11,7 @@ RSpec.describe Jambots::Controllers::NewController do
     end
 
     it "creates a new bot with the specified options" do
-      expect(Jambots::Bot).to receive(:create).with("testbot", directory: "/path/to/bots", model: "AI model", prompt: "Introduction text")
+      expect(Jambots::Bot).to receive(:create).with("testbot", path: "/path/to/bots", model: "AI model", prompt: "Introduction text")
       controller.create_bot("testbot")
     end
 
@@ -24,7 +24,7 @@ RSpec.describe Jambots::Controllers::NewController do
       let(:options) { {} }
 
       it "creates a new bot with default options" do
-        expect(Jambots::Bot).to receive(:create).with("testbot", directory: Jambots::Bot::DEFAULT_BOTS_DIR, model: Jambots::Bot::DEFAULT_MODEL, prompt: nil)
+        expect(Jambots::Bot).to receive(:create).with("testbot", path: Jambots::Bot::DEFAULT_GLOBAL_BOTS_DIR, model: Jambots::Bot::DEFAULT_MODEL, prompt: nil)
         controller.create_bot("testbot")
       end
     end

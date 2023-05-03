@@ -12,7 +12,7 @@ module Jambots::Controllers
     def chat(query)
       bot = Jambots::Bot.new(
         @options[:bot] || DEFAULT_BOT,
-        path: @options[:path] || Jambots::Bot::DEFAULT_BOTS_DIR
+        path: @options[:path] || Jambots::Bot.find_path
       )
 
       last = @options[:last]

@@ -8,12 +8,12 @@ module Jambots
       end
 
       def create_bot(name)
-        directory = @options[:directory] || Jambots::Bot::DEFAULT_BOTS_DIR
+        path = @options[:path] || Jambots::Bot.find_path
         model = @options[:model] || Jambots::Bot::DEFAULT_MODEL
         prompt = @options[:prompt]
 
-        Jambots::Bot.create(name, directory: directory, model: model, prompt: prompt)
-        puts "Bot '#{name}' created in the directory '#{directory}'."
+        Jambots::Bot.create(name, path: path, model: model, prompt: prompt)
+        puts "Bot '#{name}' created in the directory '#{path}'."
       end
     end
   end
