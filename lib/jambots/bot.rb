@@ -33,10 +33,10 @@ module Jambots
         prompt: prompt
       }
 
-      mi_hash = bot_options.transform_keys(&:to_s)
-      File.write(bot_yml_path, mi_hash.to_yaml)
+      bot_options_transformed = bot_options.transform_keys(&:to_s)
+      File.write(bot_yml_path, bot_options_transformed.to_yaml)
 
-      new(name, bot_dir: bot_dir)
+      new(name, path: path)
     end
 
     def self.find_path(path = nil)

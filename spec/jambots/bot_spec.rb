@@ -7,7 +7,6 @@ RSpec.describe Jambots::Bot do
   let(:bot_directory) { "./spec/fixtures/bots" }
   let(:bot) { described_class.new(bot_name, bot_dir: "#{bot_directory}/#{bot_name}") }
 
-
   describe ".create" do
     before do
       FileUtils.rm_rf(new_bot_directory)
@@ -24,17 +23,17 @@ RSpec.describe Jambots::Bot do
 
     it "creates a new bot" do
       expect do
-        described_class.create(new_bot_name, directory: new_bot_directory)
+        described_class.create(new_bot_name, path: new_bot_directory)
       end.to change { Dir.exist?(bot_directory) }.from(false).to(true)
     end
 
     it "creates the bot.yml configuration file" do
-      described_class.create(new_bot_name, directory: new_bot_directory)
+      described_class.create(new_bot_name, path: new_bot_directory)
       expect(File.exist?("#{bot_directory}/bot.yml")).to eq true
     end
 
     it "creates the conversations directory" do
-      described_class.create(new_bot_name, directory: new_bot_directory)
+      described_class.create(new_bot_name, path: new_bot_directory)
       expect(Dir.exist?("#{bot_directory}/conversations")).to eq true
     end
   end
