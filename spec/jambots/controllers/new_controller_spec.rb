@@ -2,7 +2,7 @@ require "spec_helper"
 
 RSpec.describe Jambots::Controllers::NewController do
   describe "#create_bot" do
-    let(:options) { { directory: "/path/to/bots", model: "AI model", prompt: "Introduction text" } }
+    let(:options) { { path: "/path/to/bots", model: "AI model", prompt: "Introduction text" } }
     let(:controller) { described_class.new(options) }
 
     before do
@@ -24,7 +24,7 @@ RSpec.describe Jambots::Controllers::NewController do
       let(:options) { {} }
 
       it "creates a new bot with default options" do
-        expect(Jambots::Bot).to receive(:create).with("testbot", path: Jambots::Bot::DEFAULT_GLOBAL_BOTS_DIR, model: Jambots::Bot::DEFAULT_MODEL, prompt: nil)
+        expect(Jambots::Bot).to receive(:create).with("testbot", path: Jambots::Bot::DEFAULT_LOCAL_BOTS_DIR, model: Jambots::Bot::DEFAULT_MODEL, prompt: nil)
         controller.create_bot("testbot")
       end
     end
