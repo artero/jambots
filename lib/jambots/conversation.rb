@@ -15,7 +15,8 @@ module Jambots
     end
 
     def save
-      File.write(@file_path, @messages.to_yaml)
+      messages_transformed = @messages.map { |message| message.transform_keys(&:to_s) }
+      File.write(@file_path, messages_transformed.to_yaml)
     end
 
     def load_messages
