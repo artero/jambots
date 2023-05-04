@@ -2,7 +2,7 @@
 require "spec_helper"
 
 RSpec.describe Jambots::Conversation do
-  let(:conversation_file_path) { "./spec/fixtures/test_bot/conversations/1.yml" }
+  let(:conversation_file_path) { "./spec/fixtures/bots/test_bot/conversations/1.yml" }
   let(:conversation) { described_class.new(conversation_file_path) }
 
   describe "#initialize" do
@@ -24,7 +24,7 @@ RSpec.describe Jambots::Conversation do
   end
 
   describe "#save" do
-    let(:new_conversation_file_path) { "./spec/fixtures/conversations/new_conversation.yml" }
+    let(:new_conversation_file_path) { "./spec/fixtures/bots/test_bot/conversations/new_conversation.yml" }
     let(:new_conversation) { described_class.new(new_conversation_file_path) }
 
     after do
@@ -49,7 +49,7 @@ RSpec.describe Jambots::Conversation do
 
     context "when the file does not exist" do
       it "returns an empty array" do
-        non_existent_conversation = described_class.new("./spec/fixtures/conversations/non_existent.yml")
+        non_existent_conversation = described_class.new("./spec/fixtures/bots/test_bot/conversations/non_existent.yml")
         messages = non_existent_conversation.load_messages
         expect(messages).to be_empty
       end
@@ -57,7 +57,7 @@ RSpec.describe Jambots::Conversation do
   end
 
   describe "#delete" do
-    let(:deletable_conversation_file_path) { "./spec/fixtures/conversations/deletable_conversation.yml" }
+    let(:deletable_conversation_file_path) { "./spec/fixtures/bots/test_bot/conversations/deletable_conversation.yml" }
     let(:deletable_conversation) { described_class.new(deletable_conversation_file_path) }
 
     before do
