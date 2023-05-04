@@ -4,37 +4,37 @@ require "spec_helper"
 
 RSpec.describe Jambots::Bot do
   let(:bot_name) { "test_bot" }
-  let(:bot_directory) { "./spec/fixtures/bots" }
-  let(:bot) { described_class.new(bot_name, bot_dir: "#{bot_directory}/#{bot_name}") }
+  let(:bot_path) { "./spec/fixtures/bots" }
+  let(:bot) { described_class.new(bot_name, path: "#{bot_path}") }
 
   describe ".create" do
     before do
-      FileUtils.rm_rf(new_bot_directory)
-      FileUtils.mkdir_p(new_bot_directory)
+      FileUtils.rm_rf(new_bot_path)
+      FileUtils.mkdir_p(new_bot_path)
     end
 
     after do
-      FileUtils.rm_rf(new_bot_directory)
+      FileUtils.rm_rf(new_bot_path)
     end
 
     let(:new_bot_name) { "new_bot" }
-    let(:new_bot_directory) { "./tmp/bots" }
-    let(:bot_directory) { "#{new_bot_directory}/#{new_bot_name}" }
+    let(:new_bot_path) { "./tmp/bots" }
+    let(:bot_path) { "#{new_bot_path}/#{new_bot_name}" }
 
     it "creates a new bot" do
       expect do
-        described_class.create(new_bot_name, path: new_bot_directory)
-      end.to change { Dir.exist?(bot_directory) }.from(false).to(true)
+        described_class.create(new_bot_name, path: new_bot_path)
+      end.to change { Dir.exist?(bot_path) }.from(false).to(true)
     end
 
     it "creates the bot.yml configuration file" do
-      described_class.create(new_bot_name, path: new_bot_directory)
-      expect(File.exist?("#{bot_directory}/bot.yml")).to eq true
+      described_class.create(new_bot_name, path: new_bot_path)
+      expect(File.exist?("#{bot_path}/bot.yml")).to eq true
     end
 
     it "creates the conversations directory" do
-      described_class.create(new_bot_name, path: new_bot_directory)
-      expect(Dir.exist?("#{bot_directory}/conversations")).to eq true
+      described_class.create(new_bot_name, path: new_bot_path)
+      expect(Dir.exist?("#{bot_path}/conversations")).to eq true
     end
   end
 
