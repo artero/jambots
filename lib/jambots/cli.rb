@@ -14,7 +14,7 @@ module Jambots
 
     desc "chat MESSAGE", "Start a chat with the bot and send a message"
     option :bot, aliases: "-b", desc: "Name of the bot"
-    option :conversation, aliases: "-c", desc: "Name of the conversation file"
+    option :conversation, aliases: "-c", desc: "Name of the conversation key"
     option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
     option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
     def chat(query)

@@ -16,7 +16,7 @@ RSpec.describe Jambots::Controllers::NewController do
     end
 
     it "outputs the bot creation message" do
-      expect(STDOUT).to receive(:puts).with("Bot 'testbot' created in the directory '/path/to/bots'.")
+      expect(STDOUT).to receive(:puts).with("Bot 'testbot' created in '/path/to/bots/testbot'")
       controller.create_bot("testbot")
     end
 

@@ -13,7 +13,7 @@ module Jambots
         prompt = @options[:prompt]
 
         Jambots::Bot.create(name, path: path, model: model, prompt: prompt)
-        puts "Bot '#{name}' created in the directory '#{path}'."
+        puts "Bot '#{name}' created in '#{path}/#{name}'"
       end
     end
   end

@@ -15,10 +15,12 @@ module Jambots
                end
 
         FileUtils.mkdir_p(path)
-        puts "Jambots directory initialized at '#{path}'."
+        puts "Jambots directory initialized at '#{path}'"
 
         # Create default bot
-        Jambots::Bot.create("jambot", path: path)
+        Jambots::Controllers::NewController
+          .new(path: path)
+          .create_bot(Jambots::Controllers::ChatController::DEFAULT_BOT)
       end
     end
   end
