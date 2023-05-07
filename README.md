@@ -22,6 +22,15 @@ Or install it yourself as:
 $ gem install jambots
 ```
 
+You'll need to create the environment variable OPENAI_API_KEY with the value of your OpenAI API Key.
+
+For instance if you use bash:
+
+```
+echo 'export OPENAI_API_KEY="your_openai_api_key"' >> ~/.bashrc
+source ~/.bashrc
+```
+
 ## Usage
 
 ### initialize a jambots path
@@ -39,6 +48,8 @@ options:
 This command will generate a Jambots directory with the default bot directory named jambot.
 
 By default, this command initializes a Jambots directory in the current directory. However, you can use the `--path` or `--globally` options to create it at different paths.
+
+
 
 #### The Jambot path
 
