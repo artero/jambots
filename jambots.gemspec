@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = <<-DESCRIPTION
     Jambots is a command-line interface (CLI) tool for interacting with chatbots powered by OpenAI's GPT. It allows you to create new chatbots, manage chatbot conversations, and send messages to chatbots.
   DESCRIPTION
-  spec.homepage = "https://juanartero.com"
+  spec.homepage = "https://github.com/artero/jambots"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.6.0"
 
