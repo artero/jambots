@@ -23,7 +23,5 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: Run the lint
-      run: bundle exec standardrb
     - name: Run the default task
       run: bundle exec rake
