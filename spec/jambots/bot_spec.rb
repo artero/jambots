@@ -5,7 +5,7 @@ require "spec_helper"
 RSpec.describe Jambots::Bot do
   let(:bot_name) { "test_bot" }
   let(:bot_path) { "./spec/fixtures/bots" }
-  let(:bot) { described_class.new(bot_name, path: "#{bot_path}") }
+  let(:bot) { described_class.new(bot_name, path: bot_path.to_s) }
 
   describe ".create" do
     before do
@@ -57,7 +57,6 @@ RSpec.describe Jambots::Bot do
       conversation
     end
     let(:user_message) { "Hello, bot!" }
-
 
     before do
       File.delete(conversation_path) if File.exist?(conversation_path)

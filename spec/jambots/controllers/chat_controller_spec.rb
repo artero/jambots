@@ -2,7 +2,7 @@ require "spec_helper"
 
 RSpec.describe Jambots::Controllers::ChatController do
   describe "#chat" do
-    let(:options) { { bot: "testbot", path: "/path/to/bots" } }
+    let(:options) { {bot: "testbot", path: "/path/to/bots"} }
     let(:controller) { described_class.new(options) }
     let(:conversation) { double("conversation") }
     let(:message) { double("message") }
@@ -27,7 +27,7 @@ RSpec.describe Jambots::Controllers::ChatController do
     end
 
     context "when last conversation is specified" do
-      let(:options) { { last: true } }
+      let(:options) { {last: true} }
 
       it "loads the last conversation from the bot" do
         expect(bot.conversations).to receive(:last).and_return(conversation)
@@ -36,7 +36,7 @@ RSpec.describe Jambots::Controllers::ChatController do
     end
 
     context "when conversation is specified" do
-      let(:options) { { conversation: "conversation-id" } }
+      let(:options) { {conversation: "conversation-id"} }
 
       it "loads the specified conversation from the bot" do
         expect(bot).to receive(:load_conversation).with("conversation-id").and_return(conversation)

@@ -7,12 +7,12 @@ module Jambots
 
       def init_jambots_path
         path = if @options[:globally]
-                 File.expand_path('~/.jambots')
-               elsif @options[:path]
-                 File.expand_path(@options[:path])
-               else
-                 './.jambots'
-               end
+          File.expand_path("~/.jambots")
+        elsif @options[:path]
+          File.expand_path(@options[:path])
+        else
+          "./.jambots"
+        end
 
         FileUtils.mkdir_p(path)
         puts "Jambots directory initialized at '#{path}'"

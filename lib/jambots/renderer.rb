@@ -5,7 +5,6 @@ require "pastel"
 
 module Jambots
   class Renderer
-
     def spinner
       @spinner ||= TTY::Spinner.new(
         "(🤖)  [#{pastel.green(":spinner")}] ",
