@@ -78,6 +78,7 @@ RSpec.describe Jambots::Bot do
         expect(bot.find_path).to eq(Jambots::Bot::DEFAULT_GLOBAL_BOTS_DIR)
       end
     end
+  end
 
   describe "#initialize" do
     it "initializes a bot with the correct name" do
