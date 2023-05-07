@@ -85,10 +85,6 @@ module Jambots
       conversation.messages.last
     end
 
-    def find_path(path = nil)
-      self.class.find_path(path)
-    end
-
     def conversations
       Dir.glob("#{conversations_dir}/*").map do |file|
         Conversation.new(file)
@@ -114,6 +110,10 @@ module Jambots
     end
 
     private
+
+    def find_path(this_path = nil)
+      self.class.find_path(this_path)
+    end
 
     def conversations_dir
       "#{bot_dir}/conversations"

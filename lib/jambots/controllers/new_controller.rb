@@ -8,7 +8,7 @@ module Jambots
       end
 
       def create_bot(name)
-        path = @options[:path] || Jambots::Bot.find_path
+        path = Jambots::Bot.find_path(@options[:path])
         model = @options[:model] || Jambots::Bot::DEFAULT_MODEL
         prompt = @options[:prompt]
 

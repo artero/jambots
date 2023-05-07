@@ -59,27 +59,6 @@ RSpec.describe Jambots::Bot do
     end
   end
 
-  describe "#find_path" do
-    context "when path is provided" do
-      it "returns the provided path" do
-        path = "/custom/path"
-        expect(bot.find_path(path)).to eq(path)
-      end
-    end
-
-    context "when path is not provided" do
-      it "returns the default local bots directory if it exists" do
-        allow(Dir).to receive(:exist?).with(Jambots::Bot::DEFAULT_LOCAL_BOTS_DIR).and_return(true)
-        expect(bot.find_path).to eq(Jambots::Bot::DEFAULT_LOCAL_BOTS_DIR)
-      end
-
-      it "returns the default global bots directory if the local directory does not exist" do
-        allow(Dir).to receive(:exist?).with(Jambots::Bot::DEFAULT_LOCAL_BOTS_DIR).and_return(false)
-        expect(bot.find_path).to eq(Jambots::Bot::DEFAULT_GLOBAL_BOTS_DIR)
-      end
-    end
-  end
-
   describe "#initialize" do
     it "initializes a bot with the correct name" do
       expect(bot.name).to eq(bot_name)
