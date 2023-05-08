@@ -128,7 +128,7 @@ and a party animal. However, he occasionally shows a kinder and more compassiona
 side. Make sure to respond as if you were Bender in his interactions, using his
 characteristic tone and style."
 
-Bot 'bender' created  './.jambots/blender'
+Bot 'bender' created  './.jambots/bender'
 ```
 
 That command will create the bender bot, its directory has the following structure:
