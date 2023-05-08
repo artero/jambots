@@ -48,17 +48,14 @@ module Jambots
     def initialize(name, args = {})
       @bot_dir = "#{find_path(args[:path])}/#{name}"
 
-      raise "Bot #{name} doesn't exist." unless File.exist?("#{bot_dir}/bot.yml")
-
-      # Load options from bot.yml file if it exists
       bot_yml_path = "#{@bot_dir}/bot.yml"
-      if File.exist?(bot_yml_path)
-        bot_yml_options = YAML.safe_load(File.read(bot_yml_path), permitted_classes: [Symbol], symbolize_names: true)
-        args = bot_yml_options.merge(args)
-      end
+
+      bot_options = load_bot_options(bot_yml_path)
+      args = bot_options.merge(args)
 
       openai_api_key = args[:openai_api_key] || ENV["OPENAI_API_KEY"]
-      @client = OpenAI::Client.new(access_token: openai_api_key, request_timeout: 240)
+      request_timeout = args[:request_timeout]
+      @client = OpenAI::Client.new(access_token: openai_api_key, request_timeout: request_timeout)
 
       @name = name
       @model = args[:model] || DEFAULT_MODEL
@@ -122,6 +119,12 @@ module Jambots
     def generate_conversation_file_name
       total_files = Dir.glob("#{@conversations_dir}/*").count
       "#{total_files + 1}.yml"
+    end
+
+    def load_bot_options(bot_yml_path)
+      raise "Bot #{name} doesn't exist." unless File.exist?(bot_yml_path)
+
+      YAML.safe_load(File.read(bot_yml_path), permitted_classes: [Symbol], symbolize_names: true)
     end
   end
 end
