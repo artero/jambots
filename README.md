@@ -1,5 +1,7 @@
 # Jambots CLI
 
+:warning: **Important notice:** This gem is in an early stage of development. Changes in commands or class interfaces may be introduced in future versions. Use it at your own risk and make sure to stay up-to-date with updates. :warning:
+
 Jambots is a command-line interface (CLI) tool for interacting with chatbots powered by OpenAI's GPT. It allows you to create new chatbots, manage chatbot conversations, and send messages to chatbots.
 
 ## Installation
