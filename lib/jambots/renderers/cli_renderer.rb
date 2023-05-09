@@ -3,8 +3,19 @@
 require "tty-spinner"
 require "pastel"
 
-module Jambots
-  class Renderer
+module Jambots::Renderers
+  class CliRenderer
+    def render(conversation, &block)
+      spinner.auto_spin
+      message = block.call
+      spinner.success
+      print_line(role_header(message[:role]))
+      puts pastel.magenta(message[:content])
+      print_line("#{conversation.key}   ")
+    end
+
+    private
+
     def spinner
       @spinner ||= TTY::Spinner.new(
         "(🤖)  [#{pastel.green(":spinner")}] ",
@@ -16,16 +27,6 @@ module Jambots
     def pastel
       @pastel ||= Pastel.new
     end
-
-    def render(message, conversation)
-      print_line(role_header(message[:role]))
-      puts pastel.magenta(message[:content])
-      file_name = conversation.file_name
-      conversation_name = File.basename(file_name, File.extname(file_name))
-      print_line("#{conversation_name}   ")
-    end
-
-    private
 
     def role_header(rol)
       case rol.to_sym
