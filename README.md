@@ -67,6 +67,7 @@ Options:
 - `--conversation` or `-c`: Name of the conversation key
 - `--path` or `-p`: Path where the bot and the conversation directory are located (default: "./.jambots or it it doesn't exist ~/.jambots")
 - `--last` or `-l`: Continue with the last conversation created
+- `--no_pretty` or `-n`: Disables pretty formatting for the output
 
 #### Conversation example
 
