@@ -23,7 +23,7 @@ RSpec.describe Jambots::Controllers::NewController do
     context "when options are not specified" do
       let(:options) { {} }
 
-      xit "creates a new bot with default options" do
+      it "creates a new bot with default options" do
         expect(Jambots::Bot).to receive(:create).with("testbot", path: "./.jambots", model: "gpt-3.5-turbo", prompt: nil)
         controller.create_bot("testbot")
       end
