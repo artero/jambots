@@ -180,6 +180,13 @@ Now, if you don't mind, I got some partying to do.
 20230501122918   ───────────────────────
 ```
 
+## Experiments
+
+In this directory, you can find examples of how to use Jambots and experiments that we consider attractive.
+
+- [Bot with option references for Ruby development](experiments/bot_with_option_references)
+
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/artero/jambots.

@@ -1,0 +1,33 @@
+# Bot with option references for Ruby development.
+
+This experiment is useful to use it in Ruby development. It covers creating a local bot with basic instructions and implementing a Jambots CLI executable with reference options to add files as context in the conversation.
+
+1. Initialize a new Jambot named `dev`:
+
+```
+jambots init dev
+```
+
+2. Edit the `./.jambots/dev/bot.yml` file with your desired settings:
+
+```
+model: gpt-3.5-turbo
+prompt: |-
+     You will help me with programming in general and Ruby in particular.
+     Give short, concise one-sentence answers if possible.
+```
+
+> Note: If you have access to gpt-4 beta, use it, the results are lot better 🙂.
+
+3. Execute the `dev` script. This command runs `jambots chat -b dev` with the `--refs` option, creates a message in the conversation for each file with the file path and file content as a reference to the OpenAI Chat API:
+
+```
+./dev "Create tests in rspec for the class Jambots::Conversation" --refs lib/jambots/conversation.rb
+```
+
+Take in consideration that this option sends the file name as reference too. Some times the path offers to the model information.
+
+### Tips
+
+- You can use `--refs` to send example files. For instance, when creating a new spec file, you can send another project's spec file to help OpenAI Chat replicate its style.
+- Keep in mind the size of the files you send as references, as it may significantly increase the number of tokens in the conversation. OpenAI Chat counts content from all messages to calculate tokens, and each model has a different token limit.

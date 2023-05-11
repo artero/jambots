@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "jambots"
+
+BASIC_ARGS = ["chat", "-b", "dev"]
+
+class DevBot < Jambots::Cli
+  desc "chat MESSAGE", "Start a chat with the bot and send a message"
+  option :bot, aliases: "-b", desc: "Name of the bot"
+  option :conversation, aliases: "-c", desc: "Name of the conversation key"
+  option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
+  option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
+  option :no_pretty, type: :boolean, aliases: "-n", desc: "Disables pretty formatting"
+  option :refs, type: :array, desc: "Add reference messages from files"
+  def chat(query)
+    chat_controller = Jambots::Controllers::ChatController.new(options)
+    add_reference_messages(chat_controller.conversation, options)
+    chat_controller.chat(query)
+  end
+
+  private
+
+  def add_reference_messages(conversation, options = {})
+    return unless options[:refs]
+
+    options[:refs].each do |file_path|
+      file_content = File.read(file_path)
+      conversation.add_message("system", "#{file_path}\n---\n #{file_content}")
+    end
+  end
+end
+
+DevBot.start(BASIC_ARGS + ARGV)
