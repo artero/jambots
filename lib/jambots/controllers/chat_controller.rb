@@ -15,14 +15,13 @@ module Jambots::Controllers
       conversation_options = conversation_options(options)
       @conversation = load_conversation(conversation_options)
 
-      @renderer = Jambots::Renderer.new
+      @renderer = load_renderer(options)
     end
 
     def chat(query)
-      renderer.spinner.auto_spin
-      message = bot.message(query, conversation)
-      renderer.spinner.success
-      renderer.render(message, conversation)
+      renderer.render(conversation) do
+        bot.message(query, conversation)
+      end
     end
 
     private
@@ -54,6 +53,14 @@ module Jambots::Controllers
       previous_conversation = last ? bot.conversations.last : bot.load_conversation(options[:conversation])
 
       previous_conversation || bot.new_conversation
+    end
+
+    def load_renderer(options)
+      if options[:no_pretty]
+        Jambots::Renderers::MinimalRenderer.new
+      else
+        Jambots::Renderers::CliRenderer.new
+      end
     end
   end
 end

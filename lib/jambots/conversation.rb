@@ -2,11 +2,12 @@
 
 module Jambots
   class Conversation
-    attr_accessor :messages, :file_name, :file_path
+    attr_accessor :messages, :file_name, :file_path, :key
 
     def initialize(file_path)
       @file_path = file_path
       @file_name = File.basename(file_path)
+      @key = File.basename(file_name, File.extname(file_name))
       @messages = load_messages
     end
 

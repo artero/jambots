@@ -17,6 +17,7 @@ module Jambots
     option :conversation, aliases: "-c", desc: "Name of the conversation key"
     option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
     option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
+    option :no_pretty, type: :boolean, aliases: "-n", desc: "Disables pretty formatting"
     def chat(query)
       chat_controller = Controllers::ChatController.new(options)
       chat_controller.chat(query)
