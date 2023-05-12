@@ -12,6 +12,10 @@ module Jambots::Renderers
       print_line(role_header(message[:role]))
       puts pastel.magenta(message[:content])
       print_line("#{conversation.key}   ")
+    rescue Jambots::ChatClientError => e
+      spinner.success
+      warn "ERROR: #{e.message}"
+      exit(1)
     end
 
     private

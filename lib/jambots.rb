@@ -12,5 +12,6 @@ require_relative "jambots/controllers/new_controller"
 
 module Jambots
   class Error < StandardError; end
-  # Your code goes here...
+
+  class ChatClientError < Error; end
 end

@@ -6,8 +6,6 @@ require "fileutils"
 require "yaml"
 
 module Jambots
-  class OpenAIMessageError < StandardError; end
-
   class Bot
     DEFAULT_MODEL = "gpt-3.5-turbo"
     DEFAULT_GLOBAL_BOTS_DIR = "#{ENV["HOME"]}/.jambots"
@@ -75,7 +73,7 @@ module Jambots
 
       message = response.dig("choices", 0, "message")
 
-      raise OpenAIMessageError, response if message.nil?
+      raise ChatClientError, handle_error(response) if response["error"]
 
       conversation.add_message("assistant", message["content"])
       conversation.save
@@ -125,6 +123,25 @@ module Jambots
       raise "Bot #{name} doesn't exist." unless File.exist?(bot_yml_path)
 
       YAML.safe_load(File.read(bot_yml_path), permitted_classes: [Symbol], symbolize_names: true)
+    end
+
+    def handle_error(response)
+      if response.dig("error", "code") == "invalid_api_key"
+        <<~HEREDOC
+          Invalid OpenAI API key. Please set the OPENAI_API_KEY environment variable to your OpenAI API key.
+          You can find your API key at https://beta.openai.com/account/api-keys.
+        HEREDOC
+      elsif response.dig("error", "code") == "max_tokens"
+        <<~HEREDOC
+          The chat is too long and exceeds the maximum number of tokens. The chat is very long and exceeds the maximum number of tokens.
+          Check the limitations of the model "#{model}" https://platform.openai.com/docs/models/overview
+        HEREDOC
+      else
+        <<~HEREDOC
+          OpenAI error - #{response["error"]["message"]}.
+          #{response}
+        HEREDOC
+      end
     end
   end
 end
