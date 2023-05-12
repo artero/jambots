@@ -2,6 +2,10 @@ require "thor"
 
 module Jambots
   class Cli < Thor
+    def self.exit_on_failure?
+      false
+    end
+
     DEFAULT_BOT = "jambot"
 
     desc "init", "Initialize a jambots path"
