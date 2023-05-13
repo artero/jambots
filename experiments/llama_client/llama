@@ -10,7 +10,16 @@ params.seed = 12
 # git lfs install
 # git clone git@hf.co:chharlesonfire/ggml-vicuna-7b-4bit ./experiments/llama_client/models/
 model_path = "./experiments/llama_client/models/ggml-vicuna-7b-4bit/ggml-vicuna-7b-q4_0.bin"
+prompt_base = <<~HEREDOC
+Transcript of a dialog, where the User interacts with an Assistant named Bob. Bob is helpful, kind, honest, good at writing, and never fails to answer the User's requests immediately and with precision.
+
+User: Hello, Bob.
+Bob: Hello. How may I help you today?
+User: Please tell me the largest city in Europe.
+Bob: Sure. The largest city in Europe is Moscow, the capital of Russia.
+User:
+HEREDOC
 
 context = LLaMACpp::Context.new(model_path: model_path, params: params)
 
-puts LLaMACpp.generate(context, "How do concatenate arrays in Ruby?", n_threads: 4)
+puts LLaMACpp.generate(context, "#{prompt_base} How do concatenate arrays in Ruby?", n_threads: 4)
