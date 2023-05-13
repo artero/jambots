@@ -13,3 +13,6 @@
 .rspec_status
 jambots-*
 .jambots
+
+# Llama.cpp experiment
+/experiments/llama_client/models*
