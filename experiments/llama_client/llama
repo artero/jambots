@@ -3,14 +3,15 @@
 require "llama_cpp"
 require "bundler/setup"
 params = LLaMACpp::ContextParams.new
-params.seed = 12
+params.seed = 13
+
 
 # To download the model, run from the root of the repo:
 # mkdir ./experiments/llama_client/models
 # git lfs install
 # git clone git@hf.co:chharlesonfire/ggml-vicuna-7b-4bit ./experiments/llama_client/models/
 model_path = "./experiments/llama_client/models/ggml-vicuna-7b-4bit/ggml-vicuna-7b-q4_0.bin"
-prompt_base = <<~HEREDOC
+prompt = <<~HEREDOC
 Transcript of a dialog, where the User interacts with an Assistant named Bob. Bob is helpful, kind, honest, good at writing, and never fails to answer the User's requests immediately and with precision.
 
 User: Hello, Bob.
@@ -20,6 +21,30 @@ Bob: Sure. The largest city in Europe is Moscow, the capital of Russia.
 User:
 HEREDOC
 
-context = LLaMACpp::Context.new(model_path: model_path, params: params)
 
-puts LLaMACpp.generate(context, "#{prompt_base} How do concatenate arrays in Ruby?", n_threads: 4)
+# context = LLaMACpp::Context.new(model_path: model_path, params: params)
+
+# output = LLaMACpp.generate(context, "#{prompt} How do concatenate arrays in Ruby?", n_threads: 4)
+
+client = LLaMACpp::Client.new(model_path: model_path, n_threads: 4, seed: 12)
+output = client.completions("#{prompt} How do concatenate arrays in Ruby?")
+
+def get_rol(rol)
+  case rol
+  when "User" then "user"
+  when "Bob" then "assistant"
+  else "system"
+  end
+  # rol == "Bob" ? "assistant" : "user"
+end
+
+messages = output.scan(/^(.*?):\s*(.*?)$/m).map do |match|
+  {rol: get_rol(match[0].strip), message: match[1].strip}
+end
+
+messages.each do |message|
+  puts "#{message[:rol]}: #{message[:message]}"
+end
+
+# first_bob_message = messages.find { |message| message[:rol] == "Bob" }
+# puts first_bob_message[:message]
