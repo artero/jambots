@@ -132,15 +132,7 @@ module Jambots
     end
 
     def client_options(options)
-      client_options = options[:client_options] || {}
-
-      # To maintain backward compatibility
-      puts "WARNING: The :openai_api_key option is deprecated. Please use :client_options instead." if options[:openai_api_key]
-      puts "WARNING: The :request_timeout option is deprecated. Please use :client_options instead." if options[:request_timeout]
-      client_options.merge(
-        api_key: options[:openai_api_key],
-        request_timeout: options[:request_timeout]
-      )
+      options[:client_options] || {}
     end
   end
 end
