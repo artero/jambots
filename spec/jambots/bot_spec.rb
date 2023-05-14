@@ -82,16 +82,7 @@ RSpec.describe Jambots::Bot do
     before do
       File.delete(conversation_path) if File.exist?(conversation_path)
 
-      allow(bot.client).to receive(:chat).and_return(
-        "choices" => [
-          {
-            "role" => "assistant",
-            "message" => {
-              "content" => "Hello, user!"
-            }
-          }
-        ]
-      )
+      allow(bot.client).to receive(:chat).and_return("Hello, user!")
     end
 
     after do
@@ -108,63 +99,6 @@ RSpec.describe Jambots::Bot do
       expect {
         bot.message(user_message, conversation)
       }.to change { conversation.messages.count }.by(2)
-    end
-
-    context "when the API response contains an error" do
-      let(:user_message) { "Hello, bot!" }
-
-      before do
-        allow(bot.client).to receive(:chat).and_return(api_response)
-      end
-
-      context "when the error code is 'invalid_api_key'" do
-        let(:api_response) do
-          {
-            "error" => {
-              "code" => "invalid_api_key"
-            }
-          }
-        end
-
-        it "raises a ChatClientError with an appropriate error message" do
-          expect {
-            bot.message(user_message, conversation)
-          }.to raise_error(Jambots::ChatClientError, /Invalid OpenAI API key/)
-        end
-      end
-
-      context "when the error code is 'max_tokens'" do
-        let(:api_response) do
-          {
-            "error" => {
-              "code" => "max_tokens"
-            }
-          }
-        end
-
-        it "raises a ChatClientError with an appropriate error message" do
-          expect {
-            bot.message(user_message, conversation)
-          }.to raise_error(Jambots::ChatClientError, /Check the limitations of the model "#{bot.model}"/)
-        end
-      end
-
-      context "when error is not recognized (API error for instance)" do
-        let(:api_response) do
-          {
-            "error" => {
-              "code" => "unknown_error",
-              "message" => "An unknown error occurred"
-            }
-          }
-        end
-
-        it "raises a ChatClientError with the error message from the response" do
-          expect {
-            bot.message(user_message, conversation)
-          }.to raise_error(Jambots::ChatClientError, /An unknown error occurred/)
-        end
-      end
     end
   end
 

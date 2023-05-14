@@ -1,5 +1,7 @@
 ### Unreleased
 
+- Moved The OpenAI functionality to a chat Jambots::Clients::OpenAIClient [#12](https://github.com/artero/jambots/pull/12)
+
 ### [0.2.0] - 2023-05-12
 
 - Handle OpenAI errors [#6](https://github.com/artero/jambots/issues/6).
