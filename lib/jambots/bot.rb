@@ -51,7 +51,7 @@ module Jambots
       bot_options = load_bot_options(bot_yml_path)
       args = bot_options.merge(args)
 
-      @client = factory_client(args)
+      @client = chat_client_factory(args)
 
       @name = name
       @model = args[:model] || DEFAULT_MODEL
@@ -120,7 +120,7 @@ module Jambots
       YAML.safe_load(File.read(bot_yml_path), permitted_classes: [Symbol], symbolize_names: true)
     end
 
-    def factory_client(options = {})
+    def chat_client_factory(options = {})
       client_classes = {
         default: Clients::OpenAIClientClient,
         open_ai: Clients::OpenAIClientClient
