@@ -51,9 +51,7 @@ module Jambots
       bot_options = load_bot_options(bot_yml_path)
       args = bot_options.merge(args)
 
-      openai_api_key = args[:openai_api_key] || ENV["OPENAI_API_KEY"]
-      request_timeout = args[:request_timeout]
-      @client = OpenAI::Client.new(access_token: openai_api_key, request_timeout: request_timeout)
+      @client = chat_client_factory(args)
 
       @name = name
       @model = args[:model] || DEFAULT_MODEL
@@ -63,21 +61,18 @@ module Jambots
     end
 
     def message(text, conversation)
-      response = client.chat(
-        parameters: {
-          model: model,
-          messages: conversation.messages.insert(-1, {role: "user", content: text}),
-          temperature: 0.7
-        }
-      )
-
-      message = response.dig("choices", 0, "message")
-
-      raise ChatClientError, handle_error(response) if response["error"]
-
-      conversation.add_message("assistant", message["content"])
+      conversation.add_message("user", text)
+      chat_response = client.chat(chat_client_options(conversation.messages))
+      conversation.add_message("assistant", chat_response)
       conversation.save
       conversation.messages.last
+    end
+
+    def chat_client_options(messages)
+      {
+        model: model,
+        messages: messages
+      }
     end
 
     def conversations
@@ -125,23 +120,19 @@ module Jambots
       YAML.safe_load(File.read(bot_yml_path), permitted_classes: [Symbol], symbolize_names: true)
     end
 
-    def handle_error(response)
-      if response.dig("error", "code") == "invalid_api_key"
-        <<~HEREDOC
-          Invalid OpenAI API key. Please set the OPENAI_API_KEY environment variable to your OpenAI API key.
-          You can find your API key at https://beta.openai.com/account/api-keys.
-        HEREDOC
-      elsif response.dig("error", "code") == "max_tokens"
-        <<~HEREDOC
-          The chat is too long and exceeds the maximum number of tokens. The chat is very long and exceeds the maximum number of tokens.
-          Check the limitations of the model "#{model}" https://platform.openai.com/docs/models/overview
-        HEREDOC
-      else
-        <<~HEREDOC
-          OpenAI error - #{response["error"]["message"]}.
-          #{response}
-        HEREDOC
-      end
+    def chat_client_factory(options = {})
+      client_classes = {
+        default: Clients::OpenAIClientClient,
+        open_ai: Clients::OpenAIClientClient
+      }
+
+      client_class = (options[:client] && client_classes[options[:client]]) || client_classes[:default]
+
+      client_class.new(client_options(options))
+    end
+
+    def client_options(options)
+      options[:client_options] || {}
     end
   end
 end
