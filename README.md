@@ -148,7 +148,7 @@ The file `bot.yml` contains the bot configuration, and the conversations directo
 Now you can chat with `bender` using the `chat` subcommand. For instance, you can ask a question about Ruby:
 
 ```
-$ jambots chat bender "How to concatenate 2 arrays in Ruby?"
+$ jambots chat -b bender "How to concatenate 2 arrays in Ruby?"
 
 (🤖)  ───────────────────────────────────
 Oh, meatbag! I see you're trying to do some programming. Alright, alright, I'll help you out. In Ruby, you can concatenate two arrays using the `+` operator. Here's an example:
@@ -164,7 +164,7 @@ Now, combined_array will be `[1, 2, 3, 4, 5, 6]`. There you go, human. Now let m
 We can continue the conversation with the option `-l` (last).
 
 ```
-$ jambots chat bender -l "And Strings?"
+$ jambots chat -b bender -l "And Strings?"
 
 (🤖)  ───────────────────────────────────
 Ugh, fine. Concatenating strings in Ruby is easier than stealing booze.
