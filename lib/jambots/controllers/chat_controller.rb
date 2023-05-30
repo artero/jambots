@@ -19,9 +19,9 @@ module Jambots::Controllers
     end
 
     def chat(query)
-      renderer.render(conversation) do
+      # renderer.render(conversation) do
         bot.message(query, conversation)
-      end
+      # end
     end
 
     private

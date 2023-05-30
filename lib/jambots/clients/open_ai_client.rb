@@ -13,6 +13,7 @@ module Jambots
       end
 
       def chat(args = {})
+        @output = ""
         if args[:messages].empty?
           raise ArgumentError, "messages must not be empty"
         end
@@ -20,25 +21,30 @@ module Jambots
         chat_params = {
           model: args[:model] || "gpt-3.5-turbo",
           messages: args[:messages],
-          temperature: args[:temperature] || 0.7
+          temperature: args[:temperature] || 0.7,
+          stream: method(:process_chunk)
         }
 
-        response = @provider_client.chat(parameters: chat_params)
+        @provider_client.chat(parameters: chat_params)
 
-        if response["error"]
-          raise ChatClientError, handle_error(response)
-        end
-
-        output = response.dig("choices", 0, "message", "content")
-
-        if output.nil?
+        if @output.nil?
           raise(ChatClientError, "OpenAI response does not contain a message")
         end
 
-        output
+        @output
       end
 
       private
+
+      def process_chunk(chunk)
+        if chunk["error"]
+          raise ChatClientError, handle_error(chunk)
+        end
+
+        part = chunk.dig("choices", 0, "delta", "content")
+        @output += part if part
+        print part
+      end
 
       def handle_error(response)
         if response.dig("error", "code") == "invalid_api_key"
