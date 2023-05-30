@@ -1,0 +1,20 @@
+# Example: Bot with webpage Content as Reference
+
+This example demonstrates how to use Jambots to preprocess user input and generate new reference messages with the "system" role. In this case, the bot extracts the text content from the web pages provided by the user and uses them as reference messages.
+
+## Prerequisites
+
+The example has its own Gemfile and is designed to be run as a standalone application. To get started, navigate to the example directory and run bundle install to install the necessary dependencies.
+
+```
+$ cd examples/webpage_content_bot
+$ bundle install
+```
+
+Once the gems are installed, you can call the bot and ask questions about the content of a URL.
+
+```
+$ ./bot "What is the latest release on the website https://www.ruby-lang.org/en/ ?"
+```
+
+For more information, refer to the source code in the `./bot` file.

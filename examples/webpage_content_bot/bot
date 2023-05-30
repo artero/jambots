@@ -1,0 +1,61 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+
+require "open-uri"
+require "nokogiri"
+require "jambots"
+
+# Is the equivalent of the following command:
+# "jambots chat -b bot -p ./botdir"
+BASIC_ARGS = ["chat", "-b", "bot", "-p", "./botdir"]
+
+# Create a new class that inherits from Jambots::Cli to have the same
+# commands as the CLI
+class DevBot < Jambots::Cli
+  desc "chat MESSAGE", "Start a chat with the bot and send a message"
+  option :bot, aliases: "-b", desc: "Name of the bot"
+  option :conversation, aliases: "-c", desc: "Name of the conversation key"
+  option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
+  option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
+  option :no_pretty, type: :boolean, aliases: "-n", desc: "Disables pretty formatting"
+  def chat(query)
+    chat_controller = Jambots::Controllers::ChatController.new(options)
+    add_page_text_as_reference(chat_controller.conversation, query)
+    chat_controller.chat(query)
+  end
+
+  private
+
+  # Add the text of a webpage as a reference message
+  # @param conversation [Jambots::Models::Conversation] the conversation
+  # @param query [String] the query that could contain urls
+  def add_page_text_as_reference(conversation, query)
+    urls = extract_url_from_text(query)
+
+    urls.each do |url|
+      message_content = get_page_text(url)
+      conversation.add_message("system", "#{url}\n---\n #{message_content}")
+    end
+  end
+
+  # Extract the urls from a text
+  # @param text [String] the text
+  # @return [Array<String>] the urls
+  def extract_url_from_text(text)
+    URI.extract(text, ["http", "https"])
+  end
+
+  # Get the text from a webpage
+  # @param url [String] the url of the webpage
+  # @return [String] the text of the webpage
+  def get_page_text(url)
+    html = URI.parse(url).open
+    doc = Nokogiri::HTML(html)
+    content = doc.xpath("//body//text()").to_s
+    content.strip.gsub(/\s+/, " ")
+  end
+end
+
+# Start the thor command to execute jambots
+DevBot.start(BASIC_ARGS + ARGV)

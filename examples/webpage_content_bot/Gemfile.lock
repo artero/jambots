@@ -1,0 +1,49 @@
+PATH
+  remote: ../..
+  specs:
+    jambots (0.2.0)
+      pastel (~> 0.8.0)
+      ruby-openai (~> 3.7)
+      thor (~> 1.2.1)
+      tty-spinner (~> 0.9.3)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    date (3.3.3)
+    httparty (0.21.0)
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
+    mini_mime (1.1.2)
+    multi_xml (0.6.0)
+    nokogiri (1.15.0-x86_64-darwin)
+      racc (~> 1.4)
+    open-uri (0.3.0)
+      stringio
+      time
+      uri
+    pastel (0.8.0)
+      tty-color (~> 0.5)
+    racc (1.6.2)
+    ruby-openai (3.7.0)
+      httparty (>= 0.18.1)
+    stringio (3.0.6)
+    thor (1.2.2)
+    time (0.2.2)
+      date
+    tty-color (0.6.0)
+    tty-cursor (0.7.1)
+    tty-spinner (0.9.3)
+      tty-cursor (~> 0.7)
+    uri (0.12.1)
+
+PLATFORMS
+  x86_64-darwin-20
+
+DEPENDENCIES
+  jambots!
+  nokogiri (~> 1.6, >= 1.6.8)
+  open-uri
+
+BUNDLED WITH
+   2.3.9
