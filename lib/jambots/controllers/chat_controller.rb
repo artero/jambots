@@ -20,28 +20,24 @@ module Jambots::Controllers
       @renderer = load_renderer(options)
     end
 
-    def ask(query)
-      renderer.render(conversation) do
-        bot.message(query, conversation)
-      end
+    def chat(query)
+      bot.message(query, conversation)
+      puts ""
     end
 
-    def chat(_)
+    def chat_interactive
+      puts "#{conversation.key} (#{conversation.file_path})"
+
       prompt = TTY::Prompt.new(
         prefix: " > ",
         interrupt: :exit,
         enable_color: false
       )
 
-      puts "#{conversation.key} (#{conversation.file_path})"
-
       loop do
         query = prompt.ask("")
 
-        # renderer.render(conversation) do
         bot.message(query, conversation)
-        puts ""
-        # end
       end
     end
 

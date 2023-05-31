@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "pastel"
+
 module Jambots
   module Clients
     class OpenAIClientClient < AbstractChatClient
@@ -22,7 +24,7 @@ module Jambots
           model: args[:model] || "gpt-3.5-turbo",
           messages: args[:messages],
           temperature: args[:temperature] || 0.7,
-          stream: method(:process_chunk)
+          stream: proc { |chunk, _bytesize | process_chunk(chunk) }
         }
 
         @output = @provider_client.chat(parameters: chat_params) if @output == ""
