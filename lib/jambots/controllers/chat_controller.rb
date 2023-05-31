@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "tty-prompt"
+
 module Jambots::Controllers
   class ChatController
     DEFAULT_BOT = "jambot"
@@ -18,10 +20,29 @@ module Jambots::Controllers
       @renderer = load_renderer(options)
     end
 
-    def chat(query)
-      # renderer.render(conversation) do
+    def ask(query)
+      renderer.render(conversation) do
         bot.message(query, conversation)
-      # end
+      end
+    end
+
+    def chat(_)
+      prompt = TTY::Prompt.new(
+        prefix: " > ",
+        interrupt: :exit,
+        enable_color: false
+      )
+
+      puts "#{conversation.key} (#{conversation.file_path})"
+
+      loop do
+        query = prompt.ask("")
+
+        # renderer.render(conversation) do
+        bot.message(query, conversation)
+        puts ""
+        # end
+      end
     end
 
     private

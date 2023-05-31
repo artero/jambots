@@ -25,9 +25,9 @@ module Jambots
           stream: method(:process_chunk)
         }
 
-        @provider_client.chat(parameters: chat_params)
+        @output = @provider_client.chat(parameters: chat_params) if @output == ""
 
-        if @output.nil?
+        if @output.nil? || @output == ""
           raise(ChatClientError, "OpenAI response does not contain a message")
         end
 
