@@ -14,8 +14,8 @@ module Jambots
         )
       end
 
-      def chat(args = {})
-        @output = ""
+      def chat(args = {}, &block)
+        @output = "" # TODO: remove @output
         if args[:messages].empty?
           raise ArgumentError, "messages must not be empty"
         end
@@ -24,28 +24,29 @@ module Jambots
           model: args[:model] || "gpt-3.5-turbo",
           messages: args[:messages],
           temperature: args[:temperature] || 0.7,
-          stream: proc { |chunk, _bytesize | process_chunk(chunk) }
+          stream: proc { |chunk, _bytesize | process_chunk(chunk, &block) }
         }
 
+        # TODO: remove @output
         @output = @provider_client.chat(parameters: chat_params) if @output == ""
 
         if @output.nil? || @output == ""
           raise(ChatClientError, "OpenAI response does not contain a message")
         end
 
-        @output
+        @output # TODO: Is not required now
       end
 
       private
 
-      def process_chunk(chunk)
+      def process_chunk(chunk, &block)
         if chunk["error"]
           raise ChatClientError, handle_error(chunk)
         end
 
         part = chunk.dig("choices", 0, "delta", "content")
-        @output += part if part
-        print part
+        @output += part if part # TODO: remove
+        block.call(part)
       end
 
       def handle_error(response)

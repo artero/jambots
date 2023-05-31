@@ -62,8 +62,25 @@ module Jambots
 
     def message(text, conversation)
       conversation.add_message("user", text)
-      chat_response = client.chat(chat_client_options(conversation.messages))
-      conversation.add_message("assistant", chat_response)
+      chat_response = ""
+      chat(messages: conversation.messages) do |chunk, content|
+        chat_response = content
+      end
+      puts chat_response
+      # conversation.add_message("assistant", chat_response)
+      # conversation.save
+      # conversation.messages.last
+    end
+
+    def chat(text, conversation, &block)
+      conversation.add_message("user", text)
+      messages = conversation.messages
+      content = ""
+      client.chat(chat_client_options(messages)) do |chunk|
+        content += chunk if chunk
+        block.call(chunk)
+      end
+      conversation.add_message("assistant", content)
       conversation.save
       conversation.messages.last
     end

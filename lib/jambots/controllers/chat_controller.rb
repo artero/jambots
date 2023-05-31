@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "pastel"
 require "tty-prompt"
 
 module Jambots::Controllers
@@ -21,8 +22,16 @@ module Jambots::Controllers
     end
 
     def chat(query)
-      bot.message(query, conversation)
+      # bot.message(query, conversation)
+      # puts ""
+      pastel = Pastel.new
+
+      message = bot.chat(query, conversation) do |chunk|
+        print pastel.yellow(chunk)
+      end
       puts ""
+      puts "----------------------------------------"
+      puts message
     end
 
     def chat_interactive
@@ -37,7 +46,7 @@ module Jambots::Controllers
       loop do
         query = prompt.ask("")
 
-        bot.message(query, conversation)
+        chat(query)
       end
     end
 
