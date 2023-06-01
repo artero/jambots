@@ -60,18 +60,6 @@ module Jambots
       FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
     end
 
-    def message(text, conversation)
-      conversation.add_message("user", text)
-      chat_response = ""
-      chat(messages: conversation.messages) do |chunk, content|
-        chat_response = content
-      end
-      puts chat_response
-      # conversation.add_message("assistant", chat_response)
-      # conversation.save
-      # conversation.messages.last
-    end
-
     def chat(text, conversation, &block)
       conversation.add_message("user", text)
       messages = conversation.messages

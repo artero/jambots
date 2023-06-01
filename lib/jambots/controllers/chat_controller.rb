@@ -22,20 +22,12 @@ module Jambots::Controllers
     end
 
     def chat(query)
-      # bot.message(query, conversation)
-      # puts ""
-      pastel = Pastel.new
-
-      message = bot.chat(query, conversation) do |chunk|
-        print pastel.yellow(chunk)
-      end
-      puts ""
-      puts "----------------------------------------"
-      puts message
+      puts "-- #{conversation.key} -- (#{conversation.file_path})"
+      reply(query)
     end
 
     def chat_interactive
-      puts "#{conversation.key} (#{conversation.file_path})"
+      puts "-- #{conversation.key} -- (#{conversation.file_path})"
 
       prompt = TTY::Prompt.new(
         prefix: " > ",
@@ -45,8 +37,7 @@ module Jambots::Controllers
 
       loop do
         query = prompt.ask("")
-
-        chat(query)
+        reply(query)
       end
     end
 
@@ -87,6 +78,17 @@ module Jambots::Controllers
       else
         Jambots::Renderers::CliRenderer.new
       end
+    end
+
+    def reply(query)
+      bot.chat(query, conversation) do |chunk|
+        print pastel.yellow(chunk)
+      end
+      puts ""
+    end
+
+    def pastel
+      @pastel ||= Pastel.new
     end
   end
 end
