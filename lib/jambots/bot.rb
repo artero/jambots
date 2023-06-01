@@ -60,10 +60,15 @@ module Jambots
       FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
     end
 
-    def message(text, conversation)
+    def chat(text, conversation, &block)
       conversation.add_message("user", text)
-      chat_response = client.chat(chat_client_options(conversation.messages))
-      conversation.add_message("assistant", chat_response)
+      messages = conversation.messages
+      content = ""
+      client.chat(chat_client_options(messages)) do |chunk|
+        content += chunk if chunk
+        block.call(chunk)
+      end
+      conversation.add_message("assistant", content)
       conversation.save
       conversation.messages.last
     end

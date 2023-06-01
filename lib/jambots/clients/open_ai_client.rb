@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "pastel"
+
 module Jambots
   module Clients
     class OpenAIClientClient < AbstractChatClient
@@ -12,7 +14,8 @@ module Jambots
         )
       end
 
-      def chat(args = {})
+      def chat(args = {}, &block)
+        @output = "" # TODO: remove @output
         if args[:messages].empty?
           raise ArgumentError, "messages must not be empty"
         end
@@ -20,25 +23,31 @@ module Jambots
         chat_params = {
           model: args[:model] || "gpt-3.5-turbo",
           messages: args[:messages],
-          temperature: args[:temperature] || 0.7
+          temperature: args[:temperature] || 0.7,
+          stream: proc { |chunk, _bytesize | process_chunk(chunk, &block) }
         }
 
-        response = @provider_client.chat(parameters: chat_params)
+        # TODO: remove @output
+        @output = @provider_client.chat(parameters: chat_params) if @output == ""
 
-        if response["error"]
-          raise ChatClientError, handle_error(response)
-        end
-
-        output = response.dig("choices", 0, "message", "content")
-
-        if output.nil?
+        if @output.nil? || @output == ""
           raise(ChatClientError, "OpenAI response does not contain a message")
         end
 
-        output
+        @output # TODO: Is not required now
       end
 
       private
+
+      def process_chunk(chunk, &block)
+        if chunk["error"]
+          raise ChatClientError, handle_error(chunk)
+        end
+
+        part = chunk.dig("choices", 0, "delta", "content")
+        @output += part if part # TODO: remove
+        block.call(part)
+      end
 
       def handle_error(response)
         if response.dig("error", "code") == "invalid_api_key"

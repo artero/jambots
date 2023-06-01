@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "pastel"
+require "tty-prompt"
+
 module Jambots::Controllers
   class ChatController
     DEFAULT_BOT = "jambot"
@@ -19,8 +22,22 @@ module Jambots::Controllers
     end
 
     def chat(query)
-      renderer.render(conversation) do
-        bot.message(query, conversation)
+      puts "-- #{conversation.key} -- (#{conversation.file_path})"
+      reply(query)
+    end
+
+    def chat_interactive
+      puts "-- #{conversation.key} -- (#{conversation.file_path})"
+
+      prompt = TTY::Prompt.new(
+        prefix: " > ",
+        interrupt: :exit,
+        enable_color: false
+      )
+
+      loop do
+        query = prompt.ask("")
+        reply(query)
       end
     end
 
@@ -61,6 +78,17 @@ module Jambots::Controllers
       else
         Jambots::Renderers::CliRenderer.new
       end
+    end
+
+    def reply(query)
+      bot.chat(query, conversation) do |chunk|
+        print pastel.yellow(chunk)
+      end
+      puts ""
+    end
+
+    def pastel
+      @pastel ||= Pastel.new
     end
   end
 end
