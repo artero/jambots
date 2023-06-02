@@ -11,7 +11,7 @@ module Jambots
     DEFAULT_GLOBAL_BOTS_DIR = "#{ENV["HOME"]}/.jambots"
     DEFAULT_LOCAL_BOTS_DIR = "./.jambots"
 
-    attr_reader :name, :model, :options, :prompt, :client, :bot_dir, :current_conversation
+    attr_reader :name, :model, :options, :prompt, :client, :bot_dir, :conversation
 
     def self.create(
       name,
@@ -44,6 +44,7 @@ module Jambots
     end
 
     def initialize(name, args = {})
+      args = args.transform_keys(&:to_sym)
       @bot_dir = "#{find_path(args[:path])}/#{name}"
 
       bot_yml_path = "#{@bot_dir}/bot.yml"
@@ -57,13 +58,18 @@ module Jambots
       @model = args[:model] || DEFAULT_MODEL
       @prompt = args[:prompt]
 
-      FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
+      @conversation = previous_conversation(args) || new_conversation
     end
 
-    def message(text, conversation)
+    def chat(text, &block)
       conversation.add_message("user", text)
-      chat_response = client.chat(chat_client_options(conversation.messages))
-      conversation.add_message("assistant", chat_response)
+      messages = conversation.messages
+      content = ""
+      client.chat(chat_client_options(messages)) do |chunk|
+        content += chunk if chunk
+        block.call(chunk)
+      end
+      conversation.add_message("assistant", content)
       conversation.save
       conversation.messages.last
     end
@@ -82,10 +88,16 @@ module Jambots
     end
 
     def new_conversation
+      FileUtils.mkdir_p(conversations_dir) unless Dir.exist?(conversations_dir)
+
       new_conversation_path = "#{conversations_dir}/#{Time.now.strftime("%Y%m%d%H%M%S")}.yml"
-      conversation = Conversation.new(new_conversation_path)
-      conversation.add_message("system", prompt.to_s)
-      conversation
+      new_conversation = Conversation.new(new_conversation_path)
+      new_conversation.add_message("system", prompt.to_s)
+      new_conversation
+    end
+
+    def previous_conversation(args)
+      args[:last] ? conversations.last : load_conversation(args[:conversation])
     end
 
     def load_conversation(conversation_name)
