@@ -90,14 +90,16 @@ RSpec.describe Jambots::Bot do
     end
 
     it "sends a message to the bot and receives a response" do
-      response_message = bot.message(user_message, conversation)
+      bot.conversation = conversation
+      response_message = bot.message(user_message)
       expect(response_message[:role]).to eq("assistant")
       expect(response_message[:content]).to eq("Hello, user!")
     end
 
     it "adds the message to the conversation" do
+      bot.conversation = conversation
       expect {
-        bot.message(user_message, conversation)
+        bot.message(user_message)
       }.to change { conversation.messages.count }.by(2)
     end
   end

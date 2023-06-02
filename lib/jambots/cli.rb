@@ -1,4 +1,6 @@
 require "thor"
+require "tty-spinner"
+require "pastel"
 
 module Jambots
   class Cli < Thor
@@ -33,18 +35,24 @@ module Jambots
     DEFAULT_BOT = "jambot"
 
     init_options
+    # Commands to initialize the jambots path
     def init
       init_controller = Controllers::InitController.new(options)
       init_controller.init_jambots_path
     end
 
     chat_options
+    # Commands to chat with the bot
+    # example: jambots chat "Hello"
+    # @param query [String] The message to send to the bot
     def chat(query)
-      chat_controller = Controllers::ChatController.new(options)
-      chat_controller.chat(query)
+      conversation_info
+      bot_response(query)
     end
 
     new_options
+    # Commands to create a new bot
+    # @param name [String] The name of the bot
     def new(name)
       new_controller = Controllers::NewController.new(options)
       new_controller.create_bot(name)
@@ -52,8 +60,34 @@ module Jambots
 
     private
 
-    def renderer
-      @renderer ||= Renderer.new
+    def bot
+      @bot ||= Bot.new(
+        options[:bot] || DEFAULT_BOT,
+        options.transform_keys(&:to_sym)
+      )
+    end
+
+    def bot_response(query)
+      spinner = TTY::Spinner.new(
+        "(🤖)  [#{pastel.green(":spinner")}] ",
+        format: :pulse_2,
+        clear: true
+      )
+      spinner.auto_spin
+      message = bot.message(query)
+      spinner.success
+
+      content = message[:content]
+
+      puts options[:no_pretty] ? content : pastel.yellow(content)
+    end
+
+    def conversation_info
+      puts bot.conversation.key
+    end
+
+    def pastel
+      @pastel ||= Pastel.new
     end
   end
 end

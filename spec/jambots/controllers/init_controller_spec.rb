@@ -4,7 +4,7 @@ RSpec.describe Jambots::Controllers::InitController do
 
   describe "#init_jambots_path" do
     let(:path) { "./.jambots" }
-    let(:default_bot) { Jambots::Controllers::ChatController::DEFAULT_BOT }
+    let(:default_bot) { Jambots::Cli::DEFAULT_BOT }
 
     before do
       allow(FileUtils).to receive(:mkdir_p)
