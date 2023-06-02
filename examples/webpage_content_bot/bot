@@ -13,12 +13,8 @@ BASIC_ARGS = ["chat", "-b", "bot", "-p", "./botdir"]
 # Create a new class that inherits from Jambots::Cli to have the same
 # commands as the CLI
 class DevBot < Jambots::Cli
-  desc "chat MESSAGE", "Start a chat with the bot and send a message"
-  option :bot, aliases: "-b", desc: "Name of the bot"
-  option :conversation, aliases: "-c", desc: "Name of the conversation key"
-  option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
-  option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
-  option :no_pretty, type: :boolean, aliases: "-n", desc: "Disables pretty formatting"
+  # load the chat description and options
+  chat_options
   def chat(query)
     chat_controller = Jambots::Controllers::ChatController.new(options)
     add_page_text_as_reference(chat_controller.conversation, query)

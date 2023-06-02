@@ -6,22 +6,19 @@ require "jambots"
 BASIC_ARGS = ["chat", "-b", "dev"]
 
 class DevBot < Jambots::Cli
-  desc "chat MESSAGE", "Start a chat with the bot and send a message"
-  option :bot, aliases: "-b", desc: "Name of the bot"
-  option :conversation, aliases: "-c", desc: "Name of the conversation key"
-  option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
-  option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
-  option :no_pretty, type: :boolean, aliases: "-n", desc: "Disables pretty formatting"
+  # load the chat description and options
+  chat_options
+  # add a new option to the chat command
   option :refs, type: :array, desc: "Add reference messages from files"
   def chat(query)
     chat_controller = Jambots::Controllers::ChatController.new(options)
-    add_reference_messages(chat_controller.conversation, options)
+    add_reference_messages(chat_controller.conversation)
     chat_controller.chat(query)
   end
 
   private
 
-  def add_reference_messages(conversation, options = {})
+  def add_reference_messages(conversation)
     return unless options[:refs]
 
     options[:refs].each do |file_path|
