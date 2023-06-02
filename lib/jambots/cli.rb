@@ -1,4 +1,5 @@
 require "thor"
+require "pastel"
 
 module Jambots
   class Cli < Thor
@@ -16,15 +17,23 @@ module Jambots
       init_controller.init_jambots_path
     end
 
+    no_commands do
+      def self.shared_options
+        method_option :bot, aliases: "-b", desc: "Name of the bot"
+        method_option :conversation, aliases: "-c", desc: "Name of the conversation key"
+        method_option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
+        method_option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
+        method_option :no_pretty, type: :boolean, aliases: "-n", desc: "Disables pretty formatting"
+      end
+    end
     desc "chat MESSAGE", "Start a chat with the bot and send a message"
-    option :bot, aliases: "-b", desc: "Name of the bot"
-    option :conversation, aliases: "-c", desc: "Name of the conversation key"
-    option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
-    option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
-    option :no_pretty, type: :boolean, aliases: "-n", desc: "Disables pretty formatting"
+    shared_options
     def chat(query)
-      chat_controller = Controllers::ChatController.new(options)
-      chat_controller.chat(query)
+      conversation_info
+      bot_response(query)
+    rescue Jambots::ChatClientError => e
+      warn "ERROR: #{e.message}"
+      exit(1)
     end
 
     desc "new NAME", "Create a new bot with the specified name"
@@ -38,8 +47,23 @@ module Jambots
 
     private
 
-    def renderer
-      @renderer ||= Renderer.new
+    def bot
+      @bot ||= Bot.new(options[:bot] || DEFAULT_BOT, options)
+    end
+
+    def bot_response(query)
+      bot.chat(query) do |chunk|
+        print options[:no_pretty] ? chunk : pastel.yellow(chunk)
+      end
+      puts ""
+    end
+
+    def conversation_info
+      puts bot.conversation.key
+    end
+
+    def pastel
+      @pastel ||= Pastel.new
     end
   end
 end

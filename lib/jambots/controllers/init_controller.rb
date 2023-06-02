@@ -20,7 +20,7 @@ module Jambots
         # Create default bot
         Jambots::Controllers::NewController
           .new(path: path)
-          .create_bot(Jambots::Controllers::ChatController::DEFAULT_BOT)
+          .create_bot(Jambots::Cli::DEFAULT_BOT)
       end
     end
   end
