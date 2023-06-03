@@ -54,8 +54,7 @@ module Jambots
     # Commands to create a new bot
     # @param name [String] The name of the bot
     def new(name)
-      new_controller = Controllers::NewController.new(options)
-      new_controller.create_bot(name)
+      create_bot(name)
     end
 
     private
@@ -88,6 +87,16 @@ module Jambots
 
     def pastel
       @pastel ||= Pastel.new
+    end
+
+    def path
+      Jambots::Bot.find_path(options[:path])
+    end
+
+    def create_bot(name)
+      model = options[:model] || Jambots::Bot::DEFAULT_MODEL
+      Jambots::Bot.create(name, path: path, model: model, prompt: options[:prompt])
+      puts "Bot '#{name}' created in '#{path}/#{name}'"
     end
   end
 end

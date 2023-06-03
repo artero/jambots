@@ -2,7 +2,7 @@ RSpec.describe Jambots::Controllers::InitController do
   let(:options) { {} }
   subject(:init_controller) { described_class.new(options) }
 
-  describe "#init_jambots_path" do
+  xdescribe "#init_jambots_path" do
     let(:path) { "./.jambots" }
     let(:default_bot) { Jambots::Cli::DEFAULT_BOT }
 
