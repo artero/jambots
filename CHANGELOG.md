@@ -4,6 +4,7 @@
 - Moved The OpenAI functionality to a chat Jambots::Clients::OpenAIClient [#12](https://github.com/artero/jambots/pull/12)
 - Update application entry point to use Jambots::Bot class instead of ChatController class.
 - Remove Renderers and ChatController and NewController.
+- Add Yard Documentation.
 
 ### [0.2.0] - 2023-05-12
 
