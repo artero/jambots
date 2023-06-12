@@ -46,7 +46,7 @@ module Jambots
     # example: jambots chat "Hello"
     # @param query [String] The message to send to the bot
     def chat(query)
-      conversation_info
+      print_conversation_info
       bot_response(query)
     end
 
@@ -81,7 +81,7 @@ module Jambots
       puts options[:no_pretty] ? content : pastel.yellow(content)
     end
 
-    def conversation_info
+    def print_conversation_info
       puts bot.conversation.key
     end
 
