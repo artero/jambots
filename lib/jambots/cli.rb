@@ -10,7 +10,16 @@ module Jambots
 
     no_commands do
       def self.chat_options
-        desc "chat MESSAGE", "Start a chat with the bot and send a message"
+        desc "chat", "Start a chat with the bot"
+        conversation_options
+      end
+
+      def self.ask_options
+        desc "ask MESSAGE", "Start a ask with the bot and send a message"
+        conversation_options
+      end
+
+      def self.conversation_options
         method_option :bot, aliases: "-b", desc: "Name of the bot"
         method_option :conversation, aliases: "-c", desc: "Name of the conversation key"
         method_option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
@@ -33,6 +42,7 @@ module Jambots
     end
 
     DEFAULT_BOT = "jambot"
+    EXIT_COMMANDS = %w[quit exit]
 
     init_options
     # Commands to initialize the jambots path
@@ -41,13 +51,28 @@ module Jambots
       init_controller.init_jambots_path
     end
 
+    ask_options
+    # Commands to ask with the bot
+    # example: jambots ask "Hello"
+    # @param query [String] The message to send to the bot
+    def ask(query)
+      conversation_info
+      bot_response(query)
+    end
+
     chat_options
     # Commands to chat with the bot
     # example: jambots chat "Hello"
-    # @param query [String] The message to send to the bot
-    def chat(query)
+    def chat
       conversation_info
-      bot_response(query)
+
+      loop do
+        print("(🙋)  ")
+        query = $stdin.gets.chomp
+        break if EXIT_COMMANDS.include?(query.strip)
+
+        bot_response(query)
+      end
     end
 
     new_options
