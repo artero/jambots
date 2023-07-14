@@ -1,7 +1,8 @@
 ### Unreleased
 
+- The `chat` command is now interactive, and the new `ask` command allows us to execute independent queries, just like we did before. [#30]https://github.com/artero/jambots/pull/30
 - Rename 'experiments' directory to 'examples'.
-- Moved The OpenAI functionality to a chat Jambots::Clients::OpenAIClient [#12](https://github.com/artero/jambots/pull/12)
+- Moved The OpenAI functionality to a chat Jambots::Clients::OpenAIClient. [#12](https://github.com/artero/jambots/pull/12)
 - Update application entry point to use Jambots::Bot class instead of ChatController class.
 - Remove Renderers and ChatController and NewController.
 - Add Yard Documentation.
