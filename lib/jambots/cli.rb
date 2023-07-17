@@ -56,7 +56,8 @@ module Jambots
     # example: jambots ask "Hello"
     # @param query [String] The message to send to the bot
     def ask(query)
-      conversation_info
+      print_conversation_info
+
       bot_response(query)
     end
 
@@ -64,7 +65,7 @@ module Jambots
     # Commands to chat with the bot
     # example: jambots chat "Hello"
     def chat
-      conversation_info
+      print_conversation_info
 
       loop do
         print("(🙋)  ")
@@ -98,7 +99,7 @@ module Jambots
       puts ""
     end
 
-    def conversation_info
+    def print_conversation_info
       puts bot.conversation.key
     end
 
