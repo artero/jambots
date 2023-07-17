@@ -101,6 +101,13 @@ RSpec.describe Jambots::Bot do
     end
 
     it "adds the message to the conversation" do
+      expect(bot.client).to receive(:chat).with(
+        {
+          messages: [{content: "Hello", role: "system"}, {content: "Hello, bot!", role: "user"}],
+          model: "gpt-3.5-turbo"
+        }
+      )
+
       bot.conversation = conversation
       expect {
         bot.chat(user_message) { |chunk| chunk }
