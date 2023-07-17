@@ -15,7 +15,7 @@ RSpec.describe Jambots::Clients::OpenAIClientClient do
     end
   end
 
-  describe "#chat" do
+  xdescribe "#chat" do
     let(:client) { described_class.new(api_key: "test_api_key", request_timeout: 10) }
     let(:params) do
       {

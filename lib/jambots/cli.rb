@@ -24,7 +24,7 @@ module Jambots
         method_option :conversation, aliases: "-c", desc: "Name of the conversation key"
         method_option :path, aliases: "-p", desc: "Path where the bot and the conversation directory are located"
         method_option :last, type: :boolean, aliases: "-l", desc: "Continue with the last conversation created"
-        method_option :no_pretty, type: :boolean, aliases: "-n", desc: "Disables pretty formatting"
+        method_option :pretty, type: :boolean, aliases: "--pretty", desc: "Disables pretty formatting"
       end
 
       def self.init_options
@@ -56,7 +56,8 @@ module Jambots
     # example: jambots ask "Hello"
     # @param query [String] The message to send to the bot
     def ask(query)
-      conversation_info
+      print_conversation_info
+
       bot_response(query)
     end
 
@@ -64,7 +65,7 @@ module Jambots
     # Commands to chat with the bot
     # example: jambots chat "Hello"
     def chat
-      conversation_info
+      print_conversation_info
 
       loop do
         print("(🙋)  ")
@@ -92,21 +93,13 @@ module Jambots
     end
 
     def bot_response(query)
-      spinner = TTY::Spinner.new(
-        "(🤖)  [#{pastel.green(":spinner")}] ",
-        format: :pulse_2,
-        clear: true
-      )
-      spinner.auto_spin
-      message = bot.message(query)
-      spinner.success
-
-      content = message[:content]
-
-      puts options[:no_pretty] ? content : pastel.yellow(content)
+      bot.chat(query) do |chunk|
+        print options[:pretty] ? pastel.yellow(chunk) : chunk
+      end
+      puts ""
     end
 
-    def conversation_info
+    def print_conversation_info
       puts bot.conversation.key
     end
 
