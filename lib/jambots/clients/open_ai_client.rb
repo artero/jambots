@@ -12,7 +12,32 @@ module Jambots
         )
       end
 
-      def chat(args = {})
+      def chat(args = {}, &block)
+        response = chat_stream(args, &block)
+
+        # Currently the OpenAI API Gem returns an empty response when the chat has some errors,
+        # so we need to check if the response is empty and call the chat method without stream to handle the error.
+        if response == ""
+          chat_without_stream(args, &block)
+        end
+      end
+
+      def chat_stream(args = {}, &block)
+        if args[:messages].empty?
+          raise ArgumentError, "messages must not be empty"
+        end
+
+        chat_params = {
+          model: args[:model] || "gpt-3.5-turbo",
+          messages: args[:messages],
+          temperature: args[:temperature] || 0.7,
+          stream: proc { |chunk, _bytesize | process_chunk(chunk, &block) }
+        }
+
+        @provider_client.chat(parameters: chat_params)
+      end
+
+      def chat_without_stream(args = {}, &block)
         if args[:messages].empty?
           raise ArgumentError, "messages must not be empty"
         end
@@ -35,10 +60,15 @@ module Jambots
           raise(ChatClientError, "OpenAI response does not contain a message")
         end
 
-        output
+        block.call(output)
       end
 
       private
+
+      def process_chunk(chunk, &block)
+        part = chunk.dig("choices", 0, "delta", "content")
+        block.call(part)
+      end
 
       def handle_error(response)
         if response.dig("error", "code") == "invalid_api_key"

@@ -81,8 +81,6 @@ RSpec.describe Jambots::Bot do
 
     before do
       File.delete(conversation_path) if File.exist?(conversation_path)
-
-      allow(bot.client).to receive(:chat).and_return("Hello, user!")
     end
 
     after do
@@ -90,16 +88,22 @@ RSpec.describe Jambots::Bot do
     end
 
     it "sends a message to the bot and receives a response" do
-      bot.conversation = conversation
-      response_message = bot.message(user_message)
+      expect(bot.client).to receive(:chat).with(
+        {
+          messages: [{content: "Hello! I am your test bot.", role: "system"}, {content: "Hello, bot!", role: "user"}],
+          model: "gpt-3.5-turbo"
+        }
+      )
+
+      response_message = bot.chat(user_message) { |chunk| chunk }
+
       expect(response_message[:role]).to eq("assistant")
-      expect(response_message[:content]).to eq("Hello, user!")
     end
 
     it "adds the message to the conversation" do
       bot.conversation = conversation
       expect {
-        bot.message(user_message)
+        bot.chat(user_message) { |chunk| chunk }
       }.to change { conversation.messages.count }.by(2)
     end
   end
