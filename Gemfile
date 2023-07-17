@@ -9,7 +9,7 @@ gem "rake", "~> 13.0"
 
 gem "rspec", "~> 3.0"
 
-gem "ruby-openai", "~> 3.7"
+gem "ruby-openai", "~> 4.2"
 
 gem "solargraph-standardrb"
 gem "solargraph"

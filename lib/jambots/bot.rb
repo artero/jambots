@@ -24,7 +24,6 @@ module Jambots
 
     attr_reader :name, :model, :options, :prompt, :client, :bot_dir
     attr_accessor :conversation
-
     # Creates a new bot with the specified name. Creates a new bot directory and bot.yml file for for this bot.
     #
     #
@@ -97,6 +96,7 @@ module Jambots
     # @option args [Symbol, nil] :client The chat client to use for the bot (Default: :default).
     # @option args [Hash, nil] :client_options The options to use for the chat client.
     def initialize(name, args = {})
+      args = args.transform_keys(&:to_sym)
       @bot_dir = "#{find_path(args[:path])}/#{name}"
 
       bot_yml_path = "#{@bot_dir}/bot.yml"
@@ -113,17 +113,15 @@ module Jambots
       @conversation = previous_conversation(args) || new_conversation
     end
 
-    # Create a new message in the current conversation, and return the message.
-    #
-    # @example
-    #  bot.message("Hello")
-    #
-    # @param path [String] The text of the message to ask to the chatbot.
-    # @return [Hash] The chatbot response message.
-    def message(text)
+    def chat(text, &block)
       conversation.add_message("user", text)
-      chat_response = client.chat(chat_client_options(conversation.messages))
-      conversation.add_message("assistant", chat_response)
+      messages = conversation.messages
+      content = ""
+      client.chat(chat_client_options(messages)) do |chunk|
+        content += chunk if chunk
+        block.call(chunk)
+      end
+      conversation.add_message("assistant", content)
       conversation.save
       conversation.messages.last
     end
