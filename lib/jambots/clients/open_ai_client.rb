@@ -31,7 +31,7 @@ module Jambots
           model: args[:model] || "gpt-3.5-turbo",
           messages: args[:messages],
           temperature: args[:temperature] || 0.7,
-          stream: proc { |chunk, _bytesize | process_chunk(chunk, &block) }
+          stream: proc { |chunk, _bytesize| process_chunk(chunk, &block) }
         }
 
         @provider_client.chat(parameters: chat_params)
